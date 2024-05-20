@@ -1,0 +1,22 @@
+{
+  "name": "vk-app-img-backend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index1.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@l2studio/iqdb-api": "^0.2.1",
+    "body-parser": "^1.20.2",
+    "cairo": "^0.1.0-alpha.3",
+    "express": "^4.19.2",
+    "pango": "^0.0.3",
+    "pixelmatch": "^5.3.0",
+    "uuid": "^9.0.1"
+  }
+}
