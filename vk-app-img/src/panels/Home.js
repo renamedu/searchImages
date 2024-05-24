@@ -1,5 +1,5 @@
-import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, IconButton, Image, ButtonGroup, RichCell } from '@vkontakte/vkui';
-import { Icon28MessageOutline, Icon56Users3Outline, Icon56SearchOutline, Icon36NftHeptagonOutline, Icon36Users3Outline } from '@vkontakte/icons';
+import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, IconButton, Image, ButtonGroup, RichCell, Accordion, Subhead, Footnote } from '@vkontakte/vkui';
+import { Icon20InfoCircleOutline, Icon56Users3Outline, Icon56SearchOutline, Icon36NftHeptagonOutline, Icon36Users3Outline } from '@vkontakte/icons';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from "react";
 import bridge from '@vkontakte/vk-bridge';
@@ -57,13 +57,48 @@ export const Home = ({ id, fetchedUser }) => {
   return (
     <Panel id={id}>
       <PanelHeader>Поиск изображений</PanelHeader>
-      {fetchedUser && (
+      {/* {fetchedUser && (
         <Group>
           <Cell before={photo_200 && <Avatar src={photo_200} />} subtitle={city?.title}>
             {`${first_name} ${last_name}`}
           </Cell>
         </Group>
-      )}
+      )} */}
+      <Group>
+        <Accordion>
+          <Accordion.Summary style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <Icon20InfoCircleOutline style={{ marginRight: '8px' }} />
+              <span>О приложении</span>
+            </div>
+          </Accordion.Summary>
+          <Accordion.Content>
+            <Div>
+            <Subhead>На главной странице находятся ваши альбомы с миниатюрами и количеством изображений. Для каждого альбома доступны две опции: поиск копий и поиск оригиналов изображений.</Subhead>
+            <br />
+            <Subhead>Поиск копий изображений:</Subhead>
+            <br />
+            <Footnote>
+              • Позволяет находить копии в выбранном альбоме.
+              <br />
+              • Отображает изображения с датой загрузки и размером, а также процентом сходства.
+              <br />
+              • Возможность просматривать найденные копии в приложении и в альбоме.
+            </Footnote>
+            <br />
+            <Subhead>Поиск оригиналов изображений:</Subhead>
+            <br />
+            <Footnote>
+              • Ищет оригиналы изображений из альбома, по сервисам картинок (Danbooru, Konachan, e-shuushuu и др.).
+              <br />
+              • Если картинки нет в сервисах, будет предложено найти в ascii2d, Google, SauceNAO и TinEye.
+              <br />
+              • Результаты поиска возможно открыть во вкладках браузера (не открываются через приложение ВК).
+            </Footnote>
+            </Div>
+          </Accordion.Content>
+        </Accordion>
+      </Group>
 
       {vkUserAlbums && <Group header={<Header 
         mode="primary"

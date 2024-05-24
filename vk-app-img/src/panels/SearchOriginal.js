@@ -117,7 +117,10 @@ export const SearchOriginal = ({ id }) => {
           imgUrl: imgUrl,
         }),
       };
-      const response = await fetch('http://localhost:3000/image-search', requestOptions);
+      // const response = await fetch('http://localhost:3000/image-search', requestOptions);
+      // const response = await fetch('http://158.160.168.247:3000/image-search', requestOptions);
+      // const response = await fetch('http://app51674008.ru:3000', requestOptions);
+      const response = await fetch('https://app51674008.ru', requestOptions);
       const searchImageResult = await response.json()
       setSearchImgResArr((prevState) => ({ ...prevState, [imgId]: searchImageResult.searchImageResult }))
     } catch (error) {
