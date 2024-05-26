@@ -9,16 +9,21 @@ const createImage = function (blob) {
     });
 }
 // Function to fetch image blob
-const fetchImageBlob = async function (imageUrl) {
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error('Failed to load image');
-    }
-    return await response.blob();
-}
-export const loadImage = async function (imageUrl) {
+const fetchImageBlob = async function (imageUrl, imageDate) {
     try {
-        const blob = await fetchImageBlob(imageUrl);
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+          throw new Error('Failed to load image');
+        }
+        return await response.blob();
+    } catch {
+        console.error('Error fetching image blob:', error);
+        throw error;
+    }
+}
+export const loadImage = async function (imageUrl, imageDate) {
+    try {
+        const blob = await fetchImageBlob(imageUrl, imageDate);
         const img = await createImage(blob);
         const width = 20;
         const height = 20;
@@ -30,7 +35,8 @@ export const loadImage = async function (imageUrl) {
         const imgData = ctx.getImageData(0, 0, width, height);
         return imgData;
     } catch (error) {
-        throw new Error('Failed to load image');
+        console.error('Failed to load image:', error);
+        throw error;
     }
 }
 // Function to compare two images

@@ -1,8 +1,8 @@
-import { Panel, PanelHeader, PanelHeaderBack, Group, RichCell, ButtonGroup, Button, Header, Pagination, Div, Spinner, Separator, Banner, Avatar, Subhead, Link, Popover, Search, Caption } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderBack, Group, RichCell, ButtonGroup, Button, Header, Pagination, Div, Spinner, Separator, Banner, Avatar, Subhead, Link, Popover, Search, Caption, FixedLayout } from '@vkontakte/vkui';
 import {Image as VKImage} from '@vkontakte/vkui';
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 import React, { useEffect, useState, useCallback } from "react";
-import { Icon36Delete, Icon28CheckCircleFill, Icon28CancelCircleFillRed, Icon48Block, Icon12ArrowUpRightOutSquareOutline, Icon16Link, Icon16InfoOutline, Icon24Done, Icon24User, Icon24SearchStarsOutline } from '@vkontakte/icons';
+import { Icon36Delete, Icon16ChevronUpCircle, Icon28CancelCircleFillRed, Icon48Block, Icon12ArrowUpRightOutSquareOutline, Icon16Link, Icon16InfoOutline, Icon24Done, Icon24User, Icon24SearchStarsOutline } from '@vkontakte/icons';
 import bridge from '@vkontakte/vk-bridge';
 import PropTypes from 'prop-types';
 import { AddImgMaxRes } from '../service/AddImgMaxRes';
@@ -133,49 +133,43 @@ export const SearchOriginal = ({ id }) => {
 
   return (
       <Panel id={id}>
-        <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/')} />}>
-          SearchOriginal
-        </PanelHeader>
-        <Group header={<Header 
-          mode="primary"
-          indicator={!error && (photosCount < 1000 ? photosCount :
-            <Popover
-              trigger={['click', 'hover', 'focus']}
-              placement="right"
-              role="tooltip"
-              aria-describedby="tooltip-3"
-              content={
-                <Caption>
-                  Колличевство изображений ограничено 1000, вследствие ограничений вк.
-                </Caption>
-              }
+        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '16px' }}>
+          <Button size="l" mode="primary" rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth' })}}>
+            <Icon16ChevronUpCircle />
+          </Button>
+        </FixedLayout>
+          <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/')} />}>
+            Поиск оригиналов
+          </PanelHeader>
+          <Group header={<Header 
+            mode="primary"
+            indicator={!error && (photosCount < 1000 ? photosCount :
+              <Popover
+                trigger={['click', 'hover', 'focus']}
+                placement="right"
+                role="tooltip"
+                aria-describedby="tooltip-3"
+                content={<Caption>Колличевство изображений ограничено 1000, вследствие ограничений вк.</Caption>}
+              >
+                  <Icon16InfoOutline />
+              </Popover>)}
             >
-                <Icon16InfoOutline />
-            </Popover>)
-          }
-          >
-            {album?.title}
-          </Header>}>
-          {error && 
-          <Banner
-          before={
-            <Icon28CancelCircleFillRed />
-          }
-          header="Ошибка загрузки :("
-          subheader={
-            <React.Fragment>
-              Попробуйте перезайти в альбом или перезагрузить приложение
-            </React.Fragment>
-          }/>}
-          { !error && <Pagination
-            currentPage={currentPage}
-            siblingCount={siblingCount}
-            boundaryCount={boundaryCount}
-            totalPages={totalPages}
-            disabled={false}
-            onChange={handleChange}
-          />}
-        </Group>
+              {album?.title}
+            </Header>}>
+            {error && <Banner
+              before={<Icon28CancelCircleFillRed />}
+              header="Ошибка загрузки :("
+              subheader={<React.Fragment>Попробуйте перезайти в альбом или перезагрузить приложение</React.Fragment>}
+            />}
+            { !error && <Pagination
+              currentPage={currentPage}
+              siblingCount={siblingCount}
+              boundaryCount={boundaryCount}
+              totalPages={totalPages}
+              disabled={false}
+              onChange={handleChange}
+            />}
+          </Group>
         { !error && currentItems?.map((img, index) => {
           let imgId = img.id;
           let date = new Date(img.date * 1000);
@@ -191,10 +185,7 @@ export const SearchOriginal = ({ id }) => {
                   src={img.imgMaxResolution.previewImg} 
                   alt="Image" 
                   borderRadius="s" 
-                  onClick={() => {
-                    bridge.send('VKWebAppShowImages',{
-                    images: [img.imgMaxResolution.url]
-                  })}}
+                  onClick={() => {bridge.send('VKWebAppShowImages',{images: [img.imgMaxResolution.url]})}}
                 ></VKImage>}
                 after={`${index + 1 + startIndex} из ${albumsImages.length}`}
                 text={`${img.imgMaxResolution.width}x${img.imgMaxResolution.height}`}
@@ -213,8 +204,7 @@ export const SearchOriginal = ({ id }) => {
                   {"Поиск"}
                 </Button>
               }
-              {searchImgResArr[imgId]
-                && (searchImgResArr[imgId].results.some(item => item.match === ("best" || "additional")) ? (
+              {searchImgResArr[imgId] && (searchImgResArr[imgId].results.some(item => item.match === ("best" || "additional")) ? (
                   searchImgResArr[imgId].results.map((result, index) => {
                     return (
                       <React.Fragment key={index}>

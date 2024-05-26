@@ -49,7 +49,7 @@ export const Home = ({ id, fetchedUser }) => {
         console.log(er);
       });
     }
-  }, [vkUserAuthToken]);
+  }, [vkUserAuthToken, fetchedUser]);
   
   // vkUserAuthToken && console.log(vkUserAuthToken);
   // vkUserAlbums && console.log(vkUserAlbums);

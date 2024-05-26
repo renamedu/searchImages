@@ -1,8 +1,8 @@
-import { Panel, PanelHeader, PanelHeaderBack, Group, RichCell, ButtonGroup, Button, Header, Pagination, Div, Spinner, Separator, Banner, Avatar, Subhead, Link } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderBack, Group, RichCell, ButtonGroup, Button, Header, Pagination, Div, Spinner, Separator, Banner, Avatar, Subhead, Link, FixedLayout } from '@vkontakte/vkui';
 import {Image as VKImage} from '@vkontakte/vkui';
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 import React, { useEffect, useState, useCallback } from "react";
-import { Icon36Delete, Icon28CheckCircleFill, Icon28CancelCircleFillRed, Icon48Block, Icon32LinkCircleOutline, Icon16Link } from '@vkontakte/icons';
+import { Icon36Delete, Icon28CheckCircleFill, Icon28CancelCircleFillRed, Icon48Block, Icon32LinkCircleOutline, Icon16Link, Icon16ChevronUpCircle } from '@vkontakte/icons';
 import bridge from '@vkontakte/vk-bridge';
 import PropTypes, { func } from 'prop-types';
 import { AddImgMaxRes } from '../service/AddImgMaxRes';
@@ -86,7 +86,7 @@ export const SearchCopy = ({ id, showAlert }) => {
           imgMaxResolution: image.imgMaxResolution,
           owner_id: image.owner_id,
           web_view_token: image.web_view_token,
-          createdImg: await loadImage(image.imgMaxResolution.comparsionSize),
+          createdImg: await loadImage(image.imgMaxResolution.comparsionSize, image.date),
         })));
         const diff = new Uint8ClampedArray(preloadedImages[0].createdImg.data.length);
 
@@ -141,16 +141,21 @@ export const SearchCopy = ({ id, showAlert }) => {
 
   return (
     <Panel id={id}>
-      <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/')} />}>
-        Найти копии
-      </PanelHeader>
-      <Group header={<Header 
-        mode="primary"
-        indicator={!error && `${diffImagesArray?.length ?? "..."} из ${photosCount}`}
-        >
-          {album?.title}
-        </Header>}>
-      </Group>
+        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '16px' }}>
+          <Button size="l" mode="primary" rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth' })}}>
+            <Icon16ChevronUpCircle />
+          </Button>
+        </FixedLayout>
+        <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/')} />}>
+          Найти копии
+        </PanelHeader>
+        <Group header={<Header 
+          mode="primary"
+          indicator={!error && `${diffImagesArray?.length ?? "..."} из ${photosCount}`}
+          >
+            {album?.title}
+          </Header>}>
+        </Group>
       {error && 
         <Banner
         before={
