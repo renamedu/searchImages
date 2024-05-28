@@ -8,6 +8,7 @@ import PropTypes, { func } from 'prop-types';
 import { AddImgMaxRes } from '../service/AddImgMaxRes';
 import { useMetaParams } from '@vkontakte/vk-mini-apps-router';
 import { loadImage, compareImages } from '../service/SearchCopyService'
+import { setAlbumNum } from '../service/SetAlbumNum';
 
 export const SearchCopy = ({ id, showAlert }) => {
   const routeNavigator = useRouteNavigator();
@@ -127,22 +128,10 @@ export const SearchCopy = ({ id, showAlert }) => {
     }
   }
 
-  function setAlbumNum(albumId) {
-    let trueNum = albumId;
-    if (albumId == "-15") {
-      trueNum = "000"
-    } else if (albumId == "-7") {
-      trueNum = "00"
-    } else if (albumId == "-6") {
-      trueNum = "0"
-    }
-    return trueNum
-  }
-
   return (
     <Panel id={id}>
-        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '16px' }}>
-          <Button size="l" mode="primary" rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth' })}}>
+        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '16px', pointerEvents: 'none' }}>
+          <Button size="l" mode="primary" style={{ pointerEvents: 'auto'}} rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth' })}}>
             <Icon16ChevronUpCircle />
           </Button>
         </FixedLayout>
@@ -152,15 +141,12 @@ export const SearchCopy = ({ id, showAlert }) => {
         <Group header={<Header 
           mode="primary"
           indicator={!error && `${diffImagesArray?.length ?? "..."} из ${photosCount}`}
-          >
-            {album?.title}
+          >{album?.title}
           </Header>}>
         </Group>
       {error && 
         <Banner
-        before={
-          <Icon28CancelCircleFillRed />
-        }
+        before={<Icon28CancelCircleFillRed />}
         header="Ошибка загрузки :("
         subheader={
           <React.Fragment>
@@ -256,9 +242,7 @@ export const SearchCopy = ({ id, showAlert }) => {
       {!error && diffImagesArray?.length == 0 ? 
         <Div>
           <Banner
-            before={
-              <Icon28CheckCircleFill />
-            }
+            before={<Icon28CheckCircleFill />}
             header="Нет копий"
           />
         </Div> : ""
@@ -273,7 +257,6 @@ export const SearchCopy = ({ id, showAlert }) => {
             }
             header="Поиск ограничен 1000 фото, вследствие ограничений вк"
           />
-          {/* <Group style={{justifyContent: 'center', textAlign: 'center'}}> */}
             <Subhead style={{justifyContent: 'center', textAlign: 'center'}} >Страница {page} из {pagesCountArr?.length}</Subhead>
             <br />
             <Subhead style={{justifyContent: 'center', textAlign: 'center'}} >{offset+1} - {photosLeftOnPage}</Subhead>
@@ -286,16 +269,13 @@ export const SearchCopy = ({ id, showAlert }) => {
               appearance="accent"
               size="s"
               stretched
-              onClick={() => {
-                pages(i);
-              }}
+              onClick={() => {pages(i)}}
               >
                 {i}
               </Button>
             )
           })}
           </ButtonGroup>
-          {/* </Group> */}
         </Div>
       }
     </Panel>

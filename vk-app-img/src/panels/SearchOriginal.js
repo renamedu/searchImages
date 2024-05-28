@@ -7,6 +7,8 @@ import bridge from '@vkontakte/vk-bridge';
 import PropTypes from 'prop-types';
 import { AddImgMaxRes } from '../service/AddImgMaxRes';
 import { useMetaParams } from '@vkontakte/vk-mini-apps-router';
+import { setOffsetAccPage } from '../service/SetOffsetAccPage';
+import { setAlbumNum } from '../service/SetAlbumNum';
 
 export const SearchOriginal = ({ id }) => {
   const routeNavigator = useRouteNavigator();
@@ -16,45 +18,35 @@ export const SearchOriginal = ({ id }) => {
   const token = params?.vkUserAuthToken;
 
   const [albumsImages, setAlbumsImages] = useState(null);
-  const photosCount = (album?.size > 1000) ? 1000 : album?.size;
   const [error, setError] = useState(null);
+  const [pagesPhotosArr, setPagesPhotosArr] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [siblingCount, setSiblingCount] = useState(1);
   const [boundaryCount, setBoundaryCount] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [offset , setOffset] = useState(0);
 
-  const [addCounter, setAddCounter] = useState(0);
-  const [addLimit, setaddLimit] = useState(9);
-  function addCalc() {
-    let counter = addCounter + 1
-    setAddCounter(counter);
-    if (addCounter == 9) {
-      setaddLimit(Math.ceil(Math.random() * 9))
-    }
-    if (addCounter == (9 + addLimit)) {
-      bridge.send('VKWebAppCheckNativeAds', {
-        ad_format: 'interstitial'
-        })
-        .then((data) => { 
-          if (data.result) { 
-            bridge.send('VKWebAppShowNativeAds', {
-              ad_format: 'interstitial'
-              })
-              .then( (data) => { 
-                if (data.result) {}
-              })
-              .catch((error) => { console.log(error); });
-          }
-        })
-        .catch((error) => { console.log(error); });
-      setAddCounter(0);
-    }
-  }
-
-  const itemsPerPage = 50; // Number of items per page (added line)
+  const itemsPerPage = 50; // Number of items per page
   const handleChange = React.useCallback((page) => {
     setCurrentPage(page);
+    setOffset(setOffsetAccPage(page))
     window.scrollTo(0, 0);
+    bridge.send('VKWebAppCheckNativeAds', {
+      ad_format: 'interstitial'
+      })
+      .then((data) => { 
+        if (data.result) { 
+          bridge.send('VKWebAppShowNativeAds', {
+            ad_format: 'interstitial'
+            })
+            .then( (data) => { 
+              if (data.result) {}
+            })
+            .catch((error) => { console.log(error) });
+        }
+      })
+      .catch((error) => { console.log(error) });
   }, []);
 
   useEffect(() => {
@@ -66,9 +58,9 @@ export const SearchOriginal = ({ id }) => {
           album_id: album?.id,
           access_token: token?.access_token,
           v: "5.131",
-          count: photosCount,
+          count: 1000,
           rev: 1,
-          // offset: offset,
+          offset: offset,
         },
       });
       return albumsImages;
@@ -77,36 +69,20 @@ export const SearchOriginal = ({ id }) => {
       .then((albumsImages) => {
         albumsImages.response.items.map((img) => {AddImgMaxRes(img)});
         setAlbumsImages(albumsImages.response.items);
-        setTotalPages(Math.ceil(albumsImages.response.items.length/50))
+        setTotalPages(Math.ceil(album?.size/50))
       })
-      .catch(error => {
-        setError(1);
-      });
-  }, []);
-  // albumsImages && console.log(albumsImages)
+      .catch(error => {setError(1)});
+  }, [offset]);
 
-  function setAlbumNum(albumId) {
-    let trueNum = albumId;
-    if (albumId == "-15") {
-      trueNum = "000"
-    } else if (albumId == "-7") {
-      trueNum = "00"
-    } else if (albumId == "-6") {
-      trueNum = "0"
-    }
-    return trueNum
-  }
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
+  const startIndex = ((currentPage - 1) * itemsPerPage) - offset;
   const endIndex = startIndex + itemsPerPage;
-  const currentItems = albumsImages?.slice(startIndex, endIndex);
+  const currentPageItems = albumsImages?.slice(startIndex, endIndex);
 
   const [searchImgResArr, setSearchImgResArr] = useState({});
   const [searchSpinner, setSearchSpinner] = useState({});
 
   async function fetchSearchImage(imgUrl, imgId) {
     setSearchSpinner((prevState) => ({ ...prevState, [imgId]: true }))
-    addCalc();
     try {
       const requestOptions = {
         method: 'POST',
@@ -117,9 +93,6 @@ export const SearchOriginal = ({ id }) => {
           imgUrl: imgUrl,
         }),
       };
-      // const response = await fetch('http://localhost:3000/image-search', requestOptions);
-      // const response = await fetch('http://158.160.168.247:3000/image-search', requestOptions);
-      // const response = await fetch('http://app51674008.ru:3000', requestOptions);
       const response = await fetch('https://app51674008.ru', requestOptions);
       const searchImageResult = await response.json()
       setSearchImgResArr((prevState) => ({ ...prevState, [imgId]: searchImageResult.searchImageResult }))
@@ -129,12 +102,11 @@ export const SearchOriginal = ({ id }) => {
       setSearchSpinner((prevState) => ({ ...prevState, [imgId]: false }));
     }
   }
-  // searchImgResArr && console.log(searchImgResArr)
 
   return (
       <Panel id={id}>
-        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '16px' }}>
-          <Button size="l" mode="primary" rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth' })}}>
+        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '16px', pointerEvents: 'none'}}>
+          <Button size="l" mode="primary" style={{ pointerEvents: 'auto'}} rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth'})}}>
             <Icon16ChevronUpCircle />
           </Button>
         </FixedLayout>
@@ -143,16 +115,7 @@ export const SearchOriginal = ({ id }) => {
           </PanelHeader>
           <Group header={<Header 
             mode="primary"
-            indicator={!error && (photosCount < 1000 ? photosCount :
-              <Popover
-                trigger={['click', 'hover', 'focus']}
-                placement="right"
-                role="tooltip"
-                aria-describedby="tooltip-3"
-                content={<Caption>Колличевство изображений ограничено 1000, вследствие ограничений вк.</Caption>}
-              >
-                  <Icon16InfoOutline />
-              </Popover>)}
+            indicator={album?.size}
             >
               {album?.title}
             </Header>}>
@@ -170,7 +133,7 @@ export const SearchOriginal = ({ id }) => {
               onChange={handleChange}
             />}
           </Group>
-        { !error && currentItems?.map((img, index) => {
+        { !error && currentPageItems?.map((img, index) => {
           let imgId = img.id;
           let date = new Date(img.date * 1000);
           if (searchSpinner[imgId] === undefined) { // Added line
@@ -187,7 +150,7 @@ export const SearchOriginal = ({ id }) => {
                   borderRadius="s" 
                   onClick={() => {bridge.send('VKWebAppShowImages',{images: [img.imgMaxResolution.url]})}}
                 ></VKImage>}
-                after={`${index + 1 + startIndex} из ${albumsImages.length}`}
+                after={`${index + 1 + ((currentPage - 1) * itemsPerPage)} из ${album?.size}`}
                 text={`${img.imgMaxResolution.width}x${img.imgMaxResolution.height}`}
                 actions={
                   <ButtonGroup mode="horizontal" gap="s" stretched>
@@ -230,7 +193,7 @@ export const SearchOriginal = ({ id }) => {
                                     before={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && <Caption level="2" weight="3">vpn!</Caption>} 
                                     after={<Icon12ArrowUpRightOutSquareOutline />}
                                     key={sIndex}>
-                                    {source.service}
+                                      {source.service}
                                   </Button>
                               )})}
                             </ButtonGroup>
@@ -264,7 +227,6 @@ export const SearchOriginal = ({ id }) => {
     </Panel>
   );
 };
-
 SearchOriginal.propTypes = {
     id: PropTypes.string.isRequired,
 };
