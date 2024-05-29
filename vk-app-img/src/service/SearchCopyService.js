@@ -9,7 +9,7 @@ const createImage = function (blob) {
     });
 }
 // Function to fetch image blob
-const fetchImageBlob = async function (imageUrl, imageDate) {
+const fetchImageBlob = async function (imageUrl) {
     try {
         const response = await fetch(imageUrl);
         if (!response.ok) {
@@ -21,9 +21,9 @@ const fetchImageBlob = async function (imageUrl, imageDate) {
         throw error;
     }
 }
-export const loadImage = async function (imageUrl, imageDate) {
+export const loadImage = async function (imageUrl) {
     try {
-        const blob = await fetchImageBlob(imageUrl, imageDate);
+        const blob = await fetchImageBlob(imageUrl);
         const img = await createImage(blob);
         const width = 20;
         const height = 20;

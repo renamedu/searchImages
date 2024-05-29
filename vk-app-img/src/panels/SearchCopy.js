@@ -87,7 +87,7 @@ export const SearchCopy = ({ id, showAlert }) => {
           imgMaxResolution: image.imgMaxResolution,
           owner_id: image.owner_id,
           web_view_token: image.web_view_token,
-          createdImg: await loadImage(image.imgMaxResolution.comparsionSize, image.date),
+          createdImg: await loadImage(image.imgMaxResolution.comparsionSize),
         })));
         const diff = new Uint8ClampedArray(preloadedImages[0].createdImg.data.length);
 
