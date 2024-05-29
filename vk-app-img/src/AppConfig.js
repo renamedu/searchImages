@@ -21,6 +21,7 @@ export const AppConfig = () => {
   async function requestAdd() {
     await vkBridge.send('VKWebAppShowBannerAd', {
       banner_location: 'bottom',
+      layout_type: 'resize',
       can_close: 'true',
     }).then((data) => { 
       if (data.result) {

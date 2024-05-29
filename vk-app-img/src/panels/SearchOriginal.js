@@ -1,4 +1,4 @@
-import { Panel, PanelHeader, PanelHeaderBack, Group, RichCell, ButtonGroup, Button, Header, Pagination, Div, Spinner, Separator, Banner, Avatar, Subhead, Link, Popover, Search, Caption, FixedLayout } from '@vkontakte/vkui';
+import { Panel, PanelHeader, PanelHeaderBack, Group, RichCell, ButtonGroup, Button, Header, Pagination, FormLayoutGroup, Spinner, Separator, Banner, FormItem, Subhead, Link, Input, Search, Caption, FixedLayout, Div } from '@vkontakte/vkui';
 import {Image as VKImage} from '@vkontakte/vkui';
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 import React, { useEffect, useState, useCallback } from "react";
@@ -19,7 +19,6 @@ export const SearchOriginal = ({ id }) => {
 
   const [albumsImages, setAlbumsImages] = useState(null);
   const [error, setError] = useState(null);
-  const [pagesPhotosArr, setPagesPhotosArr] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [siblingCount, setSiblingCount] = useState(1);
@@ -27,12 +26,14 @@ export const SearchOriginal = ({ id }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [offset , setOffset] = useState(0);
 
+  const [searchPageNumber, setSearchPageNumber] = useState(1);
   const itemsPerPage = 50; // Number of items per page
+
   const handleChange = React.useCallback((page) => {
     setCurrentPage(page);
     setOffset(setOffsetAccPage(page))
     window.scrollTo(0, 0);
-    bridge.send('VKWebAppCheckNativeAds', {
+    (Math.random() < 0.5) && bridge.send('VKWebAppCheckNativeAds', {
       ad_format: 'interstitial'
       })
       .then((data) => { 
@@ -124,14 +125,30 @@ export const SearchOriginal = ({ id }) => {
               header="Ошибка загрузки :("
               subheader={<React.Fragment>Попробуйте перезайти в альбом или перезагрузить приложение</React.Fragment>}
             />}
-            { !error && <Pagination
+            { !error && 
+            <div style={{ maxWidth: '100%', overflowX: 'auto' }}><Pagination
               currentPage={currentPage}
               siblingCount={siblingCount}
               boundaryCount={boundaryCount}
               totalPages={totalPages}
               disabled={false}
               onChange={handleChange}
-            />}
+            /></div>}
+            {!error && <FormLayoutGroup>
+              <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                <FormItem top="Введите номер страницы">
+                  <input type="number" width="auto" min="1" max={totalPages} value={searchPageNumber} onChange={(e) => {setSearchPageNumber(e.target.value)}} />
+                </FormItem>
+                <FormItem>
+                  <Button size="l" stretched onClick={() => {
+                      const page = searchPageNumber;
+                      handleChange(page)
+                    }} disabled={searchPageNumber > totalPages || searchPageNumber < 1} >
+                    Перейти
+                  </Button>
+                </FormItem>
+              </Div>
+            </FormLayoutGroup>}
           </Group>
         { !error && currentPageItems?.map((img, index) => {
           let imgId = img.id;
@@ -204,8 +221,7 @@ export const SearchOriginal = ({ id }) => {
                       </React.Fragment>
                   )})
                 ) : (
-                  <ButtonGroup stretched>
-                    <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[imgId].otherSearchHrefs.ascii2d, '_blank')}} key="ascii2d">ascii2d</Button>
+                  <ButtonGroup stretched align="right" gap="m">
                     <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[imgId].otherSearchHrefs.google, '_blank')}} key="google">google</Button>
                     <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[imgId].otherSearchHrefs.saucenao, '_blank')}} key="saucenao">saucenao</Button>
                     <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[imgId].otherSearchHrefs.tineye, '_blank')}} key="tineye">tineye</Button>
@@ -215,14 +231,14 @@ export const SearchOriginal = ({ id }) => {
             </Group>
         )})}
       { !error && <Group>
-        <Pagination
+        <div style={{ maxWidth: '100%', overflowX: 'auto' }}><Pagination
           currentPage={currentPage}
           siblingCount={siblingCount}
           boundaryCount={boundaryCount}
           totalPages={totalPages}
           disabled={false}
           onChange={handleChange}
-        />
+        /></div>
       </Group>}
     </Panel>
   );
