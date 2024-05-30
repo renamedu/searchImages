@@ -130,7 +130,7 @@ export const SearchCopy = ({ id, showAlert }) => {
 
   return (
     <Panel id={id}>
-        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '16px', pointerEvents: 'none' }}>
+        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '56px', pointerEvents: 'none' }}>
           <Button size="l" mode="primary" style={{ pointerEvents: 'auto'}} rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth' })}}>
             <Icon16ChevronUpCircle />
           </Button>
