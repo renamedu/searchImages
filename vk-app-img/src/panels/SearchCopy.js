@@ -95,7 +95,7 @@ export const SearchCopy = ({ id, showAlert }) => {
           if (seenIds.has(preloadedImages[i].id)) continue
           for (let j = i + 1; j < preloadedImages.length; j++) {
             const compareImagesArr = await compareImages(preloadedImages[i].createdImg, preloadedImages[j].createdImg, diff);
-            if (compareImagesArr !== -1 && compareImagesArr < 50) {
+            if (compareImagesArr !== -1 && compareImagesArr < 40) {
               preloadedImages[j].similarityPercent = Math.floor(100 - (compareImagesArr/400*100));
               // Check if ID is not seen before pushing
               if (!seenIds.has(preloadedImages[i].id)) {
@@ -136,7 +136,7 @@ export const SearchCopy = ({ id, showAlert }) => {
           </Button>
         </FixedLayout>
         <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/')} />}>
-          Найти копии
+          Поиск копий
         </PanelHeader>
         <Group header={<Header 
           mode="primary"

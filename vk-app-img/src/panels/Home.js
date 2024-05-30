@@ -56,14 +56,7 @@ export const Home = ({ id, fetchedUser }) => {
 
   return (
     <Panel id={id}>
-      <PanelHeader>Поиск изображений</PanelHeader>
-      {/* {fetchedUser && (
-        <Group>
-          <Cell before={photo_200 && <Avatar src={photo_200} />} subtitle={city?.title}>
-            {`${first_name} ${last_name}`}
-          </Cell>
-        </Group>
-      )} */}
+      <PanelHeader>Поиск картинок</PanelHeader>
       <Group>
         <Accordion>
           <Accordion.Summary style={{ display: 'flex', alignItems: 'center' }}>
