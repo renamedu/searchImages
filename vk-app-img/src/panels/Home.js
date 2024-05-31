@@ -100,6 +100,7 @@ export const Home = ({ id, fetchedUser }) => {
           Мои альбомы
         </Header>}>
         {vkUserAlbums?.map((item, index) => {
+          if (item.id != -9000) {
           return <RichCell
             key={index}
             before={<Image size={96} src={item.thumb_src} alt="Обложка" borderRadius="s"/>}
@@ -117,6 +118,7 @@ export const Home = ({ id, fetchedUser }) => {
           >
             {item.title}
           </RichCell>
+          }
         })}
       </Group>}
     </Panel>
