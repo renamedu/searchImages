@@ -14,8 +14,8 @@ export const SearchOriginal = ({ id }) => {
   const routeNavigator = useRouteNavigator();
   const params = useMetaParams();
   const album = params?.item;
-  const user = params?.fetchedUser;
-  const token = params?.vkUserAuthToken;
+  const fetchedUser = params?.fetchedUser;
+  const vkUserAuthToken = params?.vkUserAuthToken;
 
   const [albumsImages, setAlbumsImages] = useState(null);
   const [error, setError] = useState(null);
@@ -55,9 +55,9 @@ export const SearchOriginal = ({ id }) => {
       const albumsImages = await bridge.send("VKWebAppCallAPIMethod", {
         method: "photos.get",
         params: {
-          owner_id: user?.id,
+          owner_id: fetchedUser?.id,
           album_id: album?.id,
-          access_token: token?.access_token,
+          access_token: vkUserAuthToken?.access_token,
           v: "5.131",
           count: 1000,
           rev: 1,
@@ -111,7 +111,7 @@ export const SearchOriginal = ({ id }) => {
             <Icon16ChevronUpCircle />
           </Button>
         </FixedLayout>
-          <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/')} />}>
+          <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/albums', { state: { fetchedUser, vkUserAuthToken } })} />}>
             Поиск оригиналов
           </PanelHeader>
           <Group header={<Header 
@@ -171,7 +171,7 @@ export const SearchOriginal = ({ id }) => {
                 text={`${img.imgMaxResolution.width}x${img.imgMaxResolution.height}`}
                 actions={
                   <ButtonGroup mode="horizontal" gap="s" stretched>
-                    <Link href={`https://vk.com/album${user?.id}_${setAlbumNum(album?.id)}?z=photo${user?.id}_${img.id}%2Falbum${user?.id}_${setAlbumNum(album?.id)}%2Frev`} target="_blank">
+                    <Link href={`https://vk.com/album${fetchedUser?.id}_${setAlbumNum(album?.id)}?z=photo${fetchedUser?.id}_${img.id}%2Falbum${fetchedUser?.id}_${setAlbumNum(album?.id)}%2Frev`} target="_blank">
                       Фото в альбоме <Icon16Link />
                     </Link>
                   </ButtonGroup>
@@ -198,7 +198,7 @@ export const SearchOriginal = ({ id }) => {
                             ></VKImage>}
                           subhead={`совпадение: ${result.similarity}%`}
                           caption={
-                            <Caption style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{`Теги: ${result.thumbnail?.tags?.map((tag) => `${tag}`).join(', ')}`}</Caption>}
+                            result.thumbnail?.tags && <Caption style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{`Теги: ${result.thumbnail?.tags?.map((tag) => `${tag}`).join(', ')}`}</Caption>}
                           actions={
                             <ButtonGroup mode="horizontal" gap="s" stretched>
                               {result.sources.map((source, sIndex) => {

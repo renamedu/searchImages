@@ -14,8 +14,8 @@ export const SearchCopy = ({ id, showAlert }) => {
   const routeNavigator = useRouteNavigator();
   const params = useMetaParams();
   const album = params?.item;
-  const user = params?.fetchedUser;
-  const token = params?.vkUserAuthToken;
+  const fetchedUser = params?.fetchedUser;
+  const vkUserAuthToken = params?.vkUserAuthToken;
   const warningGradient = 'linear-gradient(90deg, #ffb73d 0%, #ffa000 100%)';
 
   const [albumsImages, setAlbumsImages] = useState(null);
@@ -34,9 +34,9 @@ export const SearchCopy = ({ id, showAlert }) => {
       const albumsImages = await bridge.send("VKWebAppCallAPIMethod", {
         method: "photos.get",
         params: {
-          owner_id: user?.id,
+          owner_id: fetchedUser?.id,
           album_id: album?.id,
-          access_token: token?.access_token,
+          access_token: vkUserAuthToken?.access_token,
           v: "5.131",
           count: photosCount,
           rev: 1,
@@ -135,7 +135,7 @@ export const SearchCopy = ({ id, showAlert }) => {
             <Icon16ChevronUpCircle />
           </Button>
         </FixedLayout>
-        <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/')} />}>
+        <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/albums', { state: { fetchedUser, vkUserAuthToken } })} />}>
           Поиск копий
         </PanelHeader>
         <Group header={<Header 
@@ -200,7 +200,7 @@ export const SearchCopy = ({ id, showAlert }) => {
               text={`${img.imgMaxResolution.width}x${img.imgMaxResolution.height}`}
               actions={
                 <ButtonGroup mode="horizontal" gap="s" stretched>
-                  <Link href={`https://vk.com/album${user?.id}_${setAlbumNum(album?.id)}?z=photo${user?.id}_${img.id}%2Falbum${user?.id}_${setAlbumNum(album?.id)}%2Frev`} target="_blank">
+                  <Link href={`https://vk.com/album${fetchedUser?.id}_${setAlbumNum(album?.id)}?z=photo${fetchedUser?.id}_${img.id}%2Falbum${fetchedUser?.id}_${setAlbumNum(album?.id)}%2Frev`} target="_blank">
                     Фото в альбоме <Icon16Link />
                   </Link>
                 </ButtonGroup>
@@ -226,7 +226,7 @@ export const SearchCopy = ({ id, showAlert }) => {
                   caption={`Сходство: ${innerImg.similarityPercent}%`}
                   actions={
                     <ButtonGroup mode="horizontal" gap="s" stretched>
-                      <Link href={`https://vk.com/album${user?.id}_${setAlbumNum(album?.id)}?z=photo${user?.id}_${innerImg.id}%2Falbum${user?.id}_${setAlbumNum(album?.id)}%2Frev`} target="_blank">
+                      <Link href={`https://vk.com/album${fetchedUser?.id}_${setAlbumNum(album?.id)}?z=photo${fetchedUser?.id}_${innerImg.id}%2Falbum${fetchedUser?.id}_${setAlbumNum(album?.id)}%2Frev`} target="_blank">
                         Фото в альбоме<Icon16Link />
                       </Link>
                     </ButtonGroup>

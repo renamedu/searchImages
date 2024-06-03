@@ -14,14 +14,16 @@ export const DEFAULT_VIEW_PANELS = {
   HOME: 'home',
   SEARCHCOPY: 'searchCopy',
   SEARCHORIGINAL: 'searchOriginal',
+  ALBUMS: 'albums',
 };
 
 export const routes = RoutesConfig.create([
   createRoot(DEFAULT_ROOT, [
     createView(DEFAULT_VIEW, [
       createPanel(DEFAULT_VIEW_PANELS.HOME, '/', []),
-      createPanel(DEFAULT_VIEW_PANELS.SEARCHCOPY, `/${DEFAULT_VIEW_PANELS.SEARCHCOPY}`, []),
-      createPanel(DEFAULT_VIEW_PANELS.SEARCHORIGINAL, `/${DEFAULT_VIEW_PANELS.SEARCHORIGINAL}`, []),
+      createPanel(DEFAULT_VIEW_PANELS.SEARCHCOPY, `/${DEFAULT_VIEW_PANELS.ALBUMS}/${DEFAULT_VIEW_PANELS.SEARCHCOPY}`, []),
+      createPanel(DEFAULT_VIEW_PANELS.SEARCHORIGINAL, `/${DEFAULT_VIEW_PANELS.ALBUMS}/${DEFAULT_VIEW_PANELS.SEARCHORIGINAL}`, []),
+      createPanel(DEFAULT_VIEW_PANELS.ALBUMS, `/${DEFAULT_VIEW_PANELS.ALBUMS}`, []),
     ]),
   ]),
 ]);
