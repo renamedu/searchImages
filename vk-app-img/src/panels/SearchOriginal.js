@@ -33,7 +33,7 @@ export const SearchOriginal = ({ id }) => {
     setCurrentPage(page);
     setOffset(setOffsetAccPage(page))
     window.scrollTo(0, 0);
-    (Math.random() < 0.5) && bridge.send('VKWebAppCheckNativeAds', {
+    bridge.send('VKWebAppCheckNativeAds', {
       ad_format: 'interstitial'
       })
       .then((data) => { 
