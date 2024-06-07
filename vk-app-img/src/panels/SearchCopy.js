@@ -10,12 +10,10 @@ import { useMetaParams } from '@vkontakte/vk-mini-apps-router';
 import { loadImage, compareImages } from '../service/SearchCopyService'
 import { setAlbumNum } from '../service/SetAlbumNum';
 
-export const SearchCopy = ({ id, showAlert }) => {
+export const SearchCopy = ({ id, fetchedUser, vkUserAuthToken }) => {
   const routeNavigator = useRouteNavigator();
   const params = useMetaParams();
   const album = params?.item;
-  const fetchedUser = params?.fetchedUser;
-  const vkUserAuthToken = params?.vkUserAuthToken;
   const warningGradient = 'linear-gradient(90deg, #ffb73d 0%, #ffa000 100%)';
 
   const [albumsImages, setAlbumsImages] = useState(null);

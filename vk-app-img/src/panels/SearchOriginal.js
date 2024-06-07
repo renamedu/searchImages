@@ -9,22 +9,25 @@ import { AddImgMaxRes } from '../service/AddImgMaxRes';
 import { useMetaParams } from '@vkontakte/vk-mini-apps-router';
 import { setOffsetAccPage } from '../service/SetOffsetAccPage';
 import { setAlbumNum } from '../service/SetAlbumNum';
+import { useSearchParams } from '@vkontakte/vk-mini-apps-router';
 
-export const SearchOriginal = ({ id }) => {
+export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbumId }) => {
   const routeNavigator = useRouteNavigator();
-  const params = useMetaParams();
-  const album = params?.item;
-  const fetchedUser = params?.fetchedUser;
-  const vkUserAuthToken = params?.vkUserAuthToken;
+
+  const [params, setParams] = useSearchParams();
+  const albumId = params.get('albumId')
+  const albumTitle = params.get('title')
+  const albumSize = params.get('size')
 
   const [albumsImages, setAlbumsImages] = useState(null);
+  const [loadingAlbumsImages, setLoadingAlbumsImages] = useState(null);
   const [error, setError] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [siblingCount, setSiblingCount] = useState(1);
   const [boundaryCount, setBoundaryCount] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [offset , setOffset] = useState(0);
+  const [offset, setOffset] = useState(0);
 
   const [searchPageNumber, setSearchPageNumber] = useState(1);
   const itemsPerPage = 50; // Number of items per page
@@ -51,29 +54,37 @@ export const SearchOriginal = ({ id }) => {
   }, []);
 
   useEffect(() => {
-    async function fetchAlbumsImages() {
-      const albumsImages = await bridge.send("VKWebAppCallAPIMethod", {
-        method: "photos.get",
-        params: {
-          owner_id: fetchedUser?.id,
-          album_id: album?.id,
-          access_token: vkUserAuthToken?.access_token,
-          v: "5.131",
-          count: 1000,
-          rev: 1,
-          offset: offset,
-        },
-      });
-      return albumsImages;
+    setLoadingAlbumsImages(1);
+    if (vkUserAuthToken) {
+      async function fetchAlbumsImages() {
+        const albumsImages = await bridge.send("VKWebAppCallAPIMethod", {
+          method: "photos.get",
+          params: {
+            owner_id: fetchedUser?.id,
+            album_id: albumId,
+            access_token: vkUserAuthToken?.access_token,
+            v: "5.131",
+            count: 1000,
+            rev: 1,
+            offset: offset,
+          },
+        });
+        return albumsImages;
+      }
+      fetchAlbumsImages()
+        .then((albumsImages) => {
+          albumsImages.response.items.map((img) => {AddImgMaxRes(img)});
+          setAlbumsImages(albumsImages.response.items);
+          setLoadingAlbumsImages(null);
+          setTotalPages(Math.ceil(albumSize/50))
+          setError(null);
+        })
+        .catch(error => {
+          setError(1);
+          console.log(error)
+        });
     }
-    fetchAlbumsImages()
-      .then((albumsImages) => {
-        albumsImages.response.items.map((img) => {AddImgMaxRes(img)});
-        setAlbumsImages(albumsImages.response.items);
-        setTotalPages(Math.ceil(album?.size/50))
-      })
-      .catch(error => {setError(1)});
-  }, [offset]);
+  }, [offset, vkUserAuthToken]);
 
   const startIndex = ((currentPage - 1) * itemsPerPage) - offset;
   const endIndex = startIndex + itemsPerPage;
@@ -111,21 +122,21 @@ export const SearchOriginal = ({ id }) => {
             <Icon16ChevronUpCircle />
           </Button>
         </FixedLayout>
-          <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/albums', { state: { fetchedUser, vkUserAuthToken } })} />}>
+          <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/albums')} />}>
             Поиск оригиналов
           </PanelHeader>
           <Group header={<Header 
             mode="primary"
-            indicator={album?.size}
+            indicator={albumSize}
             >
-              {album?.title}
+              {albumTitle}
             </Header>}>
             {error && <Banner
               before={<Icon28CancelCircleFillRed />}
               header="Ошибка загрузки :("
               subheader={<React.Fragment>Попробуйте перезайти в альбом или перезагрузить приложение</React.Fragment>}
             />}
-            { !error && 
+            { !error && albumsImages?.length > 0 &&
             <div style={{ maxWidth: '100%', overflowX: 'auto' }}><Pagination
               currentPage={currentPage}
               siblingCount={siblingCount}
@@ -134,23 +145,24 @@ export const SearchOriginal = ({ id }) => {
               disabled={false}
               onChange={handleChange}
             /></div>}
-            {!error && <FormLayoutGroup>
+            {!error && albumsImages?.length > 0 && <FormLayoutGroup>
               <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
                 <FormItem top="Введите номер страницы">
                   <input type="number" width="auto" min="1" max={totalPages} value={searchPageNumber} onChange={(e) => {setSearchPageNumber(e.target.value)}} />
                 </FormItem>
                 <FormItem>
                   <Button size="l" stretched onClick={() => {
-                      const page = searchPageNumber;
-                      handleChange(page)
-                    }} disabled={searchPageNumber > totalPages || searchPageNumber < 1} >
+                      // const page = searchPageNumber;
+                      handleChange(searchPageNumber)
+                    }} disabled={searchPageNumber > totalPages || searchPageNumber < 1 || searchPageNumber == currentPage} >
                     Перейти
                   </Button>
                 </FormItem>
               </Div>
             </FormLayoutGroup>}
           </Group>
-        { !error && currentPageItems?.map((img, index) => {
+          { loadingAlbumsImages && <Spinner size="large" style={{ margin: '20px 0' }} />}
+        { !error && !loadingAlbumsImages && albumsImages?.length > 0 && currentPageItems?.map((img, index) => {
           let imgId = img.id;
           let date = new Date(img.date * 1000);
           if (searchSpinner[imgId] === undefined) { // Added line
@@ -167,11 +179,11 @@ export const SearchOriginal = ({ id }) => {
                   borderRadius="s" 
                   onClick={() => {bridge.send('VKWebAppShowImages',{images: [img.imgMaxResolution.url]})}}
                 ></VKImage>}
-                after={`${index + 1 + ((currentPage - 1) * itemsPerPage)} из ${album?.size}`}
+                after={`${index + 1 + ((currentPage - 1) * itemsPerPage)} из ${albumSize}`}
                 text={`${img.imgMaxResolution.width}x${img.imgMaxResolution.height}`}
                 actions={
                   <ButtonGroup mode="horizontal" gap="s" stretched>
-                    <Link href={`https://vk.com/album${fetchedUser?.id}_${setAlbumNum(album?.id)}?z=photo${fetchedUser?.id}_${img.id}%2Falbum${fetchedUser?.id}_${setAlbumNum(album?.id)}%2Frev`} target="_blank">
+                    <Link href={`https://vk.com/album${fetchedUser?.id}_${setAlbumNum(albumId)}?z=photo${fetchedUser?.id}_${img.id}%2Falbum${fetchedUser?.id}_${setAlbumNum(albumId)}%2Frev`} target="_blank">
                       Фото в альбоме <Icon16Link />
                     </Link>
                   </ButtonGroup>
@@ -230,7 +242,7 @@ export const SearchOriginal = ({ id }) => {
               }
             </Group>
         )})}
-      { !error && <Group>
+      { !error && albumsImages?.length > 0 && <Group>
         <div style={{ maxWidth: '100%', overflowX: 'auto' }}><Pagination
           currentPage={currentPage}
           siblingCount={siblingCount}

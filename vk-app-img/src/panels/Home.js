@@ -10,7 +10,7 @@ import preview3 from '../images/preview3.jpg';
 
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 
-export const Home = ({ id, fetchedUser }) => {
+export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) => {
   const { photo_200, city, first_name, last_name } = { ...fetchedUser };
   const routeNavigator = useRouteNavigator();
   const warningGradient = 'linear-gradient(90deg, #ffb73d 0%, #ffa000 100%)';
@@ -20,12 +20,11 @@ export const Home = ({ id, fetchedUser }) => {
   const [limitFiles, setLimitFiles] = useState(null);
   const [searchSpinner, setSearchSpinner] = useState({});
   const [searchImgResArr, setSearchImgResArr] = useState({});
-  const [vkUserAuthToken, setVkUserAuthToken] = useState(null);
   const [base64Images, setBase64Images] = useState(null);
+  const [notImageAlert, setNotImageAlert] = useState(null);
   
   useEffect(() => {
     const previews = [preview1, preview2, preview3]
-    
     async function toBase64(url) {
       try {
         const response = await fetch(url);
@@ -78,7 +77,7 @@ export const Home = ({ id, fetchedUser }) => {
             type: 'image'
           },
           title: 'Находите оригиналы изображений',
-          subtitle: 'Вы получите размеры подлинников, теги, и ссылки на ресурсы с этими изображениями. Если такого изображения нет, возможно искать через Google, SauceNAO и TinEye.',
+          subtitle: 'Вы получите размеры подлинников, теги и ссылки на ресурсы с этими изображениями. Если изображения нет, возможно искать через Google, SauceNAO и TinEye.',
         },
         {
           media: {
@@ -86,7 +85,7 @@ export const Home = ({ id, fetchedUser }) => {
             type: 'image'
           },
           title: 'Поиск оригиналов картинок в ваших альбомах...',
-          subtitle: 'Приложение позволяет осуществить поиск без необходимости загружать изображения с устройства. Для этого перейдите к вашим альбомам',
+          subtitle: 'Возможно осуществить поиск без необходимости загружать изображения с устройства. Для этого перейдите к вашим альбомам',
         },
         {
           media: {
@@ -94,7 +93,7 @@ export const Home = ({ id, fetchedUser }) => {
             type: 'image'
           },
           title: 'А также поиск копий в альбомах',
-          subtitle: 'В ваших альбомах вы можете найди копии фото, или искать оригиналы каждого изображения',
+          subtitle: 'В ваших альбомах вы можете найди копии фото или искать оригиналы каждого изображения',
         },
       ]
     }).then(() => {
@@ -108,7 +107,14 @@ export const Home = ({ id, fetchedUser }) => {
   };
 
   const handleFileChange = (e) => {
+    setNotImageAlert(null);
+    setLimitFiles(null);
     const files = Array.from(e.target.files);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length !== files.length) {
+      setNotImageAlert(1);
+      return;
+    }
     if (files.length > 20) {
       setLimitFiles(1);
     } else if (files.length > 10) {
@@ -191,16 +197,14 @@ export const Home = ({ id, fetchedUser }) => {
   }
 
   const handleButtonClick = async () => {
-    try {
+    if (!vkUserAuthToken) {
       const vkUserAuthToken = await bridge.send("VKWebAppGetAuthToken", {
         app_id: 51674008,
         scope: "photos",
       });
       setVkUserAuthToken(vkUserAuthToken);
-      routeNavigator.push('albums', { state: { fetchedUser, vkUserAuthToken } });
-    } catch (er) {
-      console.log(er);
-    } finally {}
+    }
+    routeNavigator.push('albums');
   };
 
   return (
@@ -258,6 +262,14 @@ export const Home = ({ id, fetchedUser }) => {
             </Avatar>
           }
           header="Выбрано более 20 изображений!"
+        />}
+        {notImageAlert && <Banner
+          before={
+            <Avatar size={28} style={{ backgroundImage: warningGradient }}>
+              <span style={{ color: '#fff' }}>!</span>
+            </Avatar>
+          }
+          header="Вы можете выбирать только изображения(jpg, jpeg, png, gif)!"
         />}
         { images?.length > 0 && images?.map((img, index) => {
         if (searchSpinner[img.id] === undefined) {

@@ -5,12 +5,9 @@ import bridge from '@vkontakte/vk-bridge';
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 import { useMetaParams } from '@vkontakte/vk-mini-apps-router';
 
-export const Albums = ({ id }) => {
+export const Albums = ({ id, fetchedUser, vkUserAuthToken }) => {
     const routeNavigator = useRouteNavigator();
     const [vkUserAlbums, setVkUserAlbums] = useState(null);
-    const params = useMetaParams();
-    const fetchedUser = params?.fetchedUser;
-    const vkUserAuthToken = params?.vkUserAuthToken;
       
     useEffect(() => {
     if (vkUserAuthToken && fetchedUser) {
@@ -53,10 +50,15 @@ export const Albums = ({ id }) => {
                 caption={item.size}
                 actions={
                     <ButtonGroup mode="horizontal" gap="s" stretched>
-                    <Button mode="secondary" size="l" onClick={() => routeNavigator.push('searchCopy', {state: {item, fetchedUser, vkUserAuthToken}})}>
+                    <Button mode="secondary" size="l" onClick={() => {
+                        routeNavigator.push('searchCopy', {state: {item}});
+                        
+                    }}>
                         Копии
                     </Button>
-                    <Button mode="secondary" size="l" onClick={() => routeNavigator.push('searchOriginal', {state: {item, fetchedUser, vkUserAuthToken}})}>
+                    <Button mode="secondary" size="l" onClick={() => {
+                        routeNavigator.push(`searchOriginal?albumId=${item.id}&title=${item.title}&size=${item.size}`);
+                    }}>
                         Оригиналы
                     </Button>
                     </ButtonGroup>
