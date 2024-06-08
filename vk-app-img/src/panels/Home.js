@@ -273,89 +273,89 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
           }
           header="Вы можете выбирать только изображения(jpg, jpeg, png, gif)!"
         />}
-        { images?.length > 0 && images?.map((img, index) => {
-        if (searchSpinner[img.id] === undefined) {
-          setSearchSpinner((prevState) => ({ ...prevState, [img.id]: false }));
-        }
-        return (
-          <Group key={index}>
-            <RichCell
-              key={index}
-              before={<VKImage 
-                size={96} 
-                src={img.src}
-                alt="Image" 
-                borderRadius="s" 
-                onClick={() => {
-                  const newWindow = window.open();
-                  newWindow.document.write(
-                    `<style>body {
-                      margin: 0; 
-                      display: flex; 
-                      justify-content: center; 
-                      align-items: center; 
-                      height: 100vh; 
-                      background-color: black; 
-                    }</style><img src="${img.src}" style="max-width: 100%; max-height: 100%;" />`
-                  );
-                }}
-              ></VKImage>}
-              after={`${index + 1} из ${images?.length}`}
-            >
-              {`${img.width}x${img.height}`}
-            </RichCell>
-            {!searchImgResArr[img.id] &&
-              <Button mode="secondary" stretched before={searchSpinner[img.id] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} onClick={() => {throttledFetchSearchImage(img.arrayBuffer, img.id)}}>
-                {"Поиск"}
-              </Button>
-            }
-            {searchImgResArr[img.id] && (searchImgResArr[img.id].results.some(item => item.match === ("best" || "additional")) ? (
-                searchImgResArr[img.id].results.map((result, index) => {
-                  return (
-                    <React.Fragment key={index}>
-                      <Separator />
-                      <RichCell
-                          before={<VKImage 
-                            size={96} 
-                            src={result.thumbnail.fixedSrc} 
-                            alt="Image" 
-                            borderRadius="s"
-                          ></VKImage>}
-                        subhead={`совпадение: ${result.similarity}%`}
-                        caption={
-                          result.thumbnail?.tags && <Caption style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{`Теги: ${result.thumbnail?.tags?.map((tag) => `${tag}`).join(', ')}`}</Caption>}
-                        actions={
-                          <ButtonGroup mode="horizontal" gap="s" stretched>
-                            {result.sources.map((source, sIndex) => {
-                              return (
-                                <Button 
-                                  mode="primary" 
-                                  size="s" 
-                                  onClick={() => {window.open(source.fixedHref, '_blank')}} 
-                                  before={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && <Caption level="2" weight="3">vpn!</Caption>} 
-                                  after={<Icon12ArrowUpRightOutSquareOutline />}
-                                  key={sIndex}>
-                                    {source.service}
-                                </Button>
-                            )})}
-                          </ButtonGroup>
-                        }
-                      >
-                        {`${result.width}x${result.height}`}
-                      </RichCell>
-                    </React.Fragment>
-                )})
-              ) : (
-                <ButtonGroup stretched align="right" gap="m">
-                  <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.google, '_blank')}} key="google">google</Button>
-                  <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.saucenao, '_blank')}} key="saucenao">saucenao</Button>
-                  <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.tineye, '_blank')}} key="tineye">tineye</Button>
-                </ButtonGroup>
-              ))
-            }
-          </Group>
-      )})}
       </Group>
+      { images?.length > 0 && images?.map((img, index) => {
+      if (searchSpinner[img.id] === undefined) {
+        setSearchSpinner((prevState) => ({ ...prevState, [img.id]: false }));
+      }
+      return (
+        <Group key={index}>
+          <RichCell
+            key={index}
+            before={<VKImage 
+              size={96} 
+              src={img.src}
+              alt="Image" 
+              borderRadius="s" 
+              // onClick={() => {
+              //   const newWindow = window.open();
+              //   newWindow.document.write(
+              //     `<style>body {
+              //       margin: 0; 
+              //       display: flex; 
+              //       justify-content: center; 
+              //       align-items: center; 
+              //       height: 100vh; 
+              //       background-color: black; 
+              //     }</style><img src="${img.src}" style="max-width: 100%; max-height: 100%;" />`
+              //   );
+              // }}
+            ></VKImage>}
+            after={`${index + 1} из ${images?.length}`}
+          >
+            {`${img.width}x${img.height}`}
+          </RichCell>
+          {!searchImgResArr[img.id] &&
+            <Button mode="secondary" stretched before={searchSpinner[img.id] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} onClick={() => {throttledFetchSearchImage(img.arrayBuffer, img.id)}}>
+              {"Поиск"}
+            </Button>
+          }
+          {searchImgResArr[img.id] && (searchImgResArr[img.id].results.some(item => item.match === ("best" || "additional")) ? (
+              searchImgResArr[img.id].results.map((result, index) => {
+                return (
+                  <React.Fragment key={index}>
+                    <Separator />
+                    <RichCell
+                        before={<VKImage 
+                          size={96} 
+                          src={result.thumbnail.fixedSrc} 
+                          alt="Image" 
+                          borderRadius="s"
+                        ></VKImage>}
+                      subhead={`совпадение: ${result.similarity}%`}
+                      caption={
+                        result.thumbnail?.tags && <Caption style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{`Теги: ${result.thumbnail?.tags?.map((tag) => `${tag}`).join(', ')}`}</Caption>}
+                      actions={
+                        <ButtonGroup mode="horizontal" gap="s" stretched>
+                          {result.sources.map((source, sIndex) => {
+                            return (
+                              <Button 
+                                mode="primary" 
+                                size="s" 
+                                onClick={() => {window.open(source.fixedHref, '_blank')}} 
+                                before={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && <Caption level="2" weight="3">vpn!</Caption>} 
+                                after={<Icon12ArrowUpRightOutSquareOutline />}
+                                key={sIndex}>
+                                  {source.service}
+                              </Button>
+                          )})}
+                        </ButtonGroup>
+                      }
+                    >
+                      {`${result.width}x${result.height}`}
+                    </RichCell>
+                  </React.Fragment>
+              )})
+            ) : (
+              <ButtonGroup stretched align="right" gap="m">
+                <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.google, '_blank')}} key="google">google</Button>
+                <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.saucenao, '_blank')}} key="saucenao">saucenao</Button>
+                <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.tineye, '_blank')}} key="tineye">tineye</Button>
+              </ButtonGroup>
+            ))
+          }
+        </Group>
+      )})}
       <Group header={<Header>Копии и оригиналы картинок в альбомах</Header>}>
         <ButtonGroup mode="vertical" gap="m" stretched>
           <Button onClick={handleButtonClick} size="l" appearance="accent" stretched>
