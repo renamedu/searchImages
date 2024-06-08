@@ -24,14 +24,14 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
   const [loadingAlbumsImages, setLoadingAlbumsImages] = useState(null);
   const [error, setError] = useState(null);
 
+  const itemsPerPage = 50; // Number of items per page
   const [currentPage, setCurrentPage] = useState(1);
   const [siblingCount, setSiblingCount] = useState(1);
   const [boundaryCount, setBoundaryCount] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(Math.ceil(albumSize/itemsPerPage));
   const [offset, setOffset] = useState(0);
 
   const [searchPageNumber, setSearchPageNumber] = useState(1);
-  const itemsPerPage = 50; // Number of items per page
 
   const handleChange = React.useCallback((page) => {
     setCurrentPage(page);
@@ -77,7 +77,6 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
           albumsImages.response.items.map((img) => {AddImgMaxRes(img)});
           setAlbumsImages(albumsImages.response.items);
           setLoadingAlbumsImages(null);
-          setTotalPages(Math.ceil(albumSize/50))
           setError(null);
         })
         .catch(error => {
@@ -154,8 +153,7 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
                 </FormItem>
                 <FormItem>
                   <Button size="l" stretched onClick={() => {
-                      // const page = searchPageNumber;
-                      handleChange(searchPageNumber)
+                      handleChange(Number(searchPageNumber))
                     }} disabled={searchPageNumber > totalPages || searchPageNumber < 1 || searchPageNumber == currentPage} >
                     Перейти
                   </Button>
