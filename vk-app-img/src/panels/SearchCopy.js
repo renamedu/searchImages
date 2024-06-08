@@ -51,7 +51,7 @@ export const SearchCopy = ({ id, fetchedUser, vkUserAuthToken }) => {
   }, [offset]);
 
   useEffect(() => {
-    if (albumsImages) {
+    if (albumsImages?.length > 0) {
       function imageMaxResolution(imgArray) {
         imgArray.map((img) => {
           AddImgMaxRes(img)
@@ -70,6 +70,8 @@ export const SearchCopy = ({ id, fetchedUser, vkUserAuthToken }) => {
         setPhotosLeftOnPage(photosLeftOnPage)
       }
       calcPagesCount(album)
+    } else if (albumsImages?.length == 0) {
+      setDiffImagesArray([]);
     }
   }, [albumsImages])
 
@@ -78,15 +80,25 @@ export const SearchCopy = ({ id, fetchedUser, vkUserAuthToken }) => {
       const findSimilarImages = async (imageArray) => {
         const similarImages = [];
         const seenIds = new Set(); // To track unique IDs
-        const preloadedImages = await Promise.all(imageArray.map(async (image) => ({
-          album_id: image.album_id,
-          date: image.date,
-          id: image.id,
-          imgMaxResolution: image.imgMaxResolution,
-          owner_id: image.owner_id,
-          web_view_token: image.web_view_token,
-          createdImg: await loadImage(image.imgMaxResolution.comparsionSize),
-        })));
+        const prepreloadedImages = await Promise.all(imageArray.map(async (image) => {
+          try {
+            const createdImg = await loadImage(image.imgMaxResolution.comparsionSize);
+            return {
+              album_id: image.album_id,
+              date: image.date,
+              id: image.id,
+              imgMaxResolution: image.imgMaxResolution,
+              owner_id: image.owner_id,
+              web_view_token: image.web_view_token,
+              createdImg: createdImg,
+            };
+          } catch (error) {
+            console.warn(`Skipping image with id ${image.id} due to load error.`);
+            return null; // Return null for images that fail to load
+          }
+        }));
+        // Filter out images that failed to load (null values)
+        const preloadedImages = prepreloadedImages.filter(image => image !== null);
         const diff = new Uint8ClampedArray(preloadedImages[0].createdImg.data.length);
 
         for (let i = 0; i < preloadedImages.length; i++) {

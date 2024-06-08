@@ -10,16 +10,11 @@ const createImage = function (blob) {
 }
 // Function to fetch image blob
 const fetchImageBlob = async function (imageUrl) {
-    // try {
-        const response = await fetch(imageUrl);
-        if (!response.ok) {
-          throw new Error('Failed to load image');
-        }
-        return await response.blob();
-    // } catch {
-    //     console.error('Error fetching image blob:', error);
-    //     throw error;
-    // }
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+        throw new Error('Failed to load image');
+    }
+    return await response.blob();
 }
 export const loadImage = async function (imageUrl) {
     try {

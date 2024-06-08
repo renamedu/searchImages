@@ -5,6 +5,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Icon36Delete, Icon16ChevronUpCircle, Icon28CancelCircleFillRed, Icon48Block, Icon12ArrowUpRightOutSquareOutline, Icon16Link, Icon16InfoOutline, Icon24Done, Icon24User, Icon24SearchStarsOutline } from '@vkontakte/icons';
 import bridge from '@vkontakte/vk-bridge';
 import PropTypes from 'prop-types';
+import { throttle } from 'lodash';
 import { AddImgMaxRes } from '../service/AddImgMaxRes';
 import { useMetaParams } from '@vkontakte/vk-mini-apps-router';
 import { setOffsetAccPage } from '../service/SetOffsetAccPage';
@@ -93,6 +94,7 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
   const [searchImgResArr, setSearchImgResArr] = useState({});
   const [searchSpinner, setSearchSpinner] = useState({});
 
+  const throttledFetchSearchImage = throttle(
   async function fetchSearchImage(imgUrl, imgId) {
     setSearchSpinner((prevState) => ({ ...prevState, [imgId]: true }))
     try {
@@ -113,7 +115,7 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
     } finally {
       setSearchSpinner((prevState) => ({ ...prevState, [imgId]: false }));
     }
-  }
+  }, 1000);
 
   return (
       <Panel id={id}>
@@ -192,7 +194,7 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
                 {date.toLocaleDateString()}
               </RichCell>
               {!searchImgResArr[imgId] &&
-                <Button mode="secondary" stretched before={searchSpinner[imgId] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} onClick={() => {fetchSearchImage(img.imgMaxResolution.url, img.id)}}>
+                <Button mode="secondary" stretched before={searchSpinner[imgId] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} onClick={() => {throttledFetchSearchImage(img.imgMaxResolution.url, img.id)}}>
                   {"Поиск"}
                 </Button>
               }

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState } from "react";
 import bridge from '@vkontakte/vk-bridge';
 import {Image as VKImage} from '@vkontakte/vkui';
+import { throttle } from 'lodash';
 import preview1 from '../images/preview1.jpg';
 import preview2 from '../images/preview2.jpg';
 import preview3 from '../images/preview3.jpg';
@@ -173,28 +174,29 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
     }
   }, [selectedFiles]);
 
-  async function fetchSearchImage(arrayBuffer, imgId) {
-    setSearchSpinner((prevState) => ({ ...prevState, [imgId]: true }))
-    try {
-      const uint8Array = new Uint8Array(arrayBuffer);
-      const requestOptions = {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imgData: Array.from(uint8Array),
-        }),
-      };
-      const response = await fetch('https://app51674008.ru', requestOptions);
-      const searchImageResult = await response.json()
-      setSearchImgResArr((prevState) => ({ ...prevState, [imgId]: searchImageResult.searchImageResult }))
-    } catch (error) {
-      console.log(error)
-    } finally {
-      setSearchSpinner((prevState) => ({ ...prevState, [imgId]: false }));
-    }
-  }
+  const throttledFetchSearchImage = throttle(
+    async function fetchSearchImage(arrayBuffer, imgId) {
+      setSearchSpinner((prevState) => ({ ...prevState, [imgId]: true }))
+      try {
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const requestOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            imgData: Array.from(uint8Array),
+          }),
+        };
+        const response = await fetch('https://app51674008.ru', requestOptions);
+        const searchImageResult = await response.json()
+        setSearchImgResArr((prevState) => ({ ...prevState, [imgId]: searchImageResult.searchImageResult }))
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setSearchSpinner((prevState) => ({ ...prevState, [imgId]: false }));
+      }
+  }, 1000);
 
   const handleButtonClick = async () => {
     if (!vkUserAuthToken) {
@@ -303,7 +305,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
               {`${img.width}x${img.height}`}
             </RichCell>
             {!searchImgResArr[img.id] &&
-              <Button mode="secondary" stretched before={searchSpinner[img.id] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} onClick={() => {fetchSearchImage(img.arrayBuffer, img.id)}}>
+              <Button mode="secondary" stretched before={searchSpinner[img.id] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} onClick={() => {throttledFetchSearchImage(img.arrayBuffer, img.id)}}>
                 {"Поиск"}
               </Button>
             }
