@@ -31,7 +31,7 @@ export const App = () => {
     fetchLaunchParams();
   }, []);
 
-  console.log(userLaunchParams?.vk_platform)
+  // console.log(userLaunchParams?.vk_platform)
 
   useEffect(() => {
     if (userLaunchParams?.vk_access_token_settings == "photos") {

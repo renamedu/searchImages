@@ -8,6 +8,7 @@ import { throttle } from 'lodash';
 import preview1 from '../images/preview1.jpg';
 import preview2 from '../images/preview2.jpg';
 import preview3 from '../images/preview3.jpg';
+import axios from 'axios';
 
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 
@@ -23,6 +24,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
   const [searchImgResArr, setSearchImgResArr] = useState({});
   const [base64Images, setBase64Images] = useState(null);
   const [notImageAlert, setNotImageAlert] = useState(null);
+  const [userReg, setUserReg] = useState(null);
   
   useEffect(() => {
     const previews = [preview1, preview2, preview3]
@@ -41,7 +43,6 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
         throw error;
       }
     }
-
     async function checkOnboardingStatus() {
       try {
         const storageData = await bridge.send('VKWebAppStorageGet', { keys: ['onboarding_status'] });
@@ -69,7 +70,6 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
       console.error('Base64 images array is empty or null');
       return;
     }
-
     bridge.send('VKWebAppShowSlidesSheet', {
       slides: [
         {
@@ -168,7 +168,6 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
       const loadedImages = await Promise.all(imagePromises);
       setImages(loadedImages);
     };
-
     if (selectedFiles?.length > 0) {
       loadImages();
     }
@@ -188,6 +187,14 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
             imgData: Array.from(uint8Array),
           }),
         };
+        if (!userReg) {
+          try {
+          const response = await axios.get('https://ipinfo.io/json');
+          setUserReg(response.data.country);
+        } catch (error) {
+          console.error('Region location error:', error);
+        }
+      }
         const response = await fetch('https://app51674008.ru', requestOptions);
         const searchImageResult = await response.json()
         setSearchImgResArr((prevState) => ({ ...prevState, [imgId]: searchImageResult.searchImageResult }))
@@ -222,7 +229,9 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
           </Accordion.Summary>
           <Accordion.Content>
             <Div>
-            <Subhead>На главной странице вы можете загрузить свои изображения для поиска подлинников. Также возможно искать оригиналы среди ваших изображений в альбомах. Для каждого альбома доступны две опции: поиск копий и поиск оригиналов изображений.</Subhead>
+            <Subhead>
+              На главной странице вы можете загрузить свои изображения для поиска подлинников. Также возможно искать оригиналы среди ваших изображений в альбомах. Для каждого альбома доступны две опции: поиск копий и поиск оригиналов изображений.
+            </Subhead>
             <Subhead>Поиск копий изображений:</Subhead>
             <Footnote>
               • Позволяет находить копии в выбранном альбоме.
@@ -234,11 +243,11 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
             <br />
             <Subhead>Поиск оригиналов изображений:</Subhead>
             <Footnote>
-              • Ищет оригиналы изображений из альбома, по сервисам картинок (Danbooru, Konachan, e-shuushuu и др.).
+              • Ищет оригиналы изображений из альбома, по сервисам картинок (Danbooru, Anime-Pictures, e-shuushuu и др.).
               <br />
               • Если картинки нет в сервисах, будет предложено найти в Google, SauceNAO и TinEye.
               <br />
-              • Результаты поиска возможно открыть во вкладках браузера (не открываются через приложение ВК).
+              • Результаты поиска возможно открыть во вкладках браузера.
             </Footnote>
             </Div>
           </Accordion.Content>
@@ -287,19 +296,6 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
               src={img.src}
               alt="Image" 
               borderRadius="s" 
-              // onClick={() => {
-              //   const newWindow = window.open();
-              //   newWindow.document.write(
-              //     `<style>body {
-              //       margin: 0; 
-              //       display: flex; 
-              //       justify-content: center; 
-              //       align-items: center; 
-              //       height: 100vh; 
-              //       background-color: black; 
-              //     }</style><img src="${img.src}" style="max-width: 100%; max-height: 100%;" />`
-              //   );
-              // }}
             ></VKImage>}
             after={`${index + 1} из ${images?.length}`}
           >
@@ -310,7 +306,9 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
               {"Поиск"}
             </Button>
           }
-          {searchImgResArr[img.id] && (searchImgResArr[img.id].results.some(item => item.match === ("best" || "additional")) ? (
+          {searchImgResArr[img.id] && (
+            <>
+            {searchImgResArr[img.id].results.some(item => item.match === "best" || item.match === "additional") &&
               searchImgResArr[img.id].results.map((result, index) => {
                 return (
                   <React.Fragment key={index}>
@@ -323,8 +321,20 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
                           borderRadius="s"
                         ></VKImage>}
                       subhead={`совпадение: ${result.similarity}%`}
-                      caption={
-                        result.thumbnail?.tags && <Caption style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{`Теги: ${result.thumbnail?.tags?.map((tag) => `${tag}`).join(', ')}`}</Caption>}
+                      text={result.thumbnail?.tags && <Caption style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{`Теги: ${result.thumbnail?.tags?.map((tag) => `${tag}`).join(', ')}`}</Caption>}
+                      caption={(result.sources[0].service != "Anime-Pictures" && result.sources[0].service != "Zerochan" && result.sources[0].service != "e-shuushuu") 
+                        && (!userReg || userReg == "RU") && <Banner
+                          style={{ padding: '2px' }}
+                          before={
+                            <Avatar size={16} style={{ backgroundImage: warningGradient }}>
+                              <span style={{ color: '#fff' }}>!</span>
+                            </Avatar>
+                          }
+                          text={
+                            <Caption level="1" style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                              {`Недоступен переход по запрещенным в РФ ресурсам (${result.sources[0].service == "Danbooru" ? result.sources[0].service+"/Gelbooru" : result.sources[0].service})`}
+                            </Caption>
+                      }/>}
                       actions={
                         <ButtonGroup mode="horizontal" gap="s" stretched>
                           {result.sources.map((source, sIndex) => {
@@ -332,8 +342,8 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
                               <Button 
                                 mode="primary" 
                                 size="s" 
-                                onClick={() => {window.open(source.fixedHref, '_blank')}} 
-                                before={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && <Caption level="2" weight="3">vpn!</Caption>} 
+                                onClick={() => {window.open(source.fixedHref, '_blank')}}
+                                disabled={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && (!userReg || userReg == "RU") && true}
                                 after={<Icon12ArrowUpRightOutSquareOutline />}
                                 key={sIndex}>
                                   {source.service}
@@ -345,15 +355,15 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
                       {`${result.width}x${result.height}`}
                     </RichCell>
                   </React.Fragment>
-              )})
-            ) : (
-              <ButtonGroup stretched align="right" gap="m">
+              )})}
+              <Separator />
+              <ButtonGroup stretched align="right" gap="m" style={{ marginTop: '8px' }}>
                 <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.google, '_blank')}} key="google">google</Button>
                 <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.saucenao, '_blank')}} key="saucenao">saucenao</Button>
                 <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.tineye, '_blank')}} key="tineye">tineye</Button>
               </ButtonGroup>
-            ))
-          }
+            </>
+            )}
         </Group>
       )})}
       <Group header={<Header>Копии и оригиналы картинок в альбомах</Header>}>
