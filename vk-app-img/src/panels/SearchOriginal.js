@@ -252,15 +252,16 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
                               <ButtonGroup mode="horizontal" gap="s" stretched>
                                 {result.sources.map((source, sIndex) => {
                                   return (
-                                    <Button 
-                                      mode="primary" 
-                                      size="s" 
-                                      onClick={() => {window.open(source.fixedHref, '_blank')}}
-                                      disabled={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && (!userReg || userReg == "RU") && true}
-                                      after={<Icon12ArrowUpRightOutSquareOutline />}
-                                      key={sIndex}>
-                                        {source.service}
-                                    </Button>
+                                    <Link href={source.fixedHref} target="_blank" style={{ textDecoration: 'none' }}>
+                                      <Button 
+                                        mode="primary" 
+                                        size="s"
+                                        disabled={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && (!userReg || userReg == "RU") && true}
+                                        after={<Icon12ArrowUpRightOutSquareOutline />}
+                                        key={sIndex}>
+                                          {source.service}
+                                      </Button>
+                                    </Link>
                                 )})}
                               </ButtonGroup>
                             }
@@ -271,9 +272,15 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
                   )})}
                   <Separator />
                   <ButtonGroup stretched align="right" gap="m" style={{ marginTop: '8px' }}>
-                    <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[imgId].otherSearchHrefs.google, '_blank')}} key="google">google</Button>
-                    <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[imgId].otherSearchHrefs.saucenao, '_blank')}} key="saucenao">saucenao</Button>
-                    <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[imgId].otherSearchHrefs.tineye, '_blank')}} key="tineye">tineye</Button>
+                    <Link href={searchImgResArr[imgId].otherSearchHrefs.google} target="_blank" style={{ textDecoration: 'none' }}>
+                      <Button mode="primary" size="s" after={<Icon12ArrowUpRightOutSquareOutline />} key="google">google</Button>
+                    </Link>
+                    <Link href={searchImgResArr[imgId].otherSearchHrefs.saucenao} target="_blank" style={{ textDecoration: 'none' }}>
+                      <Button mode="primary" size="s" after={<Icon12ArrowUpRightOutSquareOutline />} key="saucenao">saucenao</Button>
+                    </Link>
+                    <Link href={searchImgResArr[imgId].otherSearchHrefs.tineye} target="_blank" style={{ textDecoration: 'none' }}>
+                      <Button mode="primary" size="s" after={<Icon12ArrowUpRightOutSquareOutline />} key="tineye">tineye</Button>
+                    </Link>
                   </ButtonGroup>
                 </>
               )}

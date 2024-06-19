@@ -1,4 +1,4 @@
-import { Panel, PanelHeader, Header, Button, Group, FormItem, Div, File, Banner, Avatar, ButtonGroup, RichCell, Accordion, Subhead, Footnote, Spinner, Caption, Separator } from '@vkontakte/vkui';
+import { Panel, PanelHeader, Header, Button, Group, FormItem, Div, File, Banner, Avatar, ButtonGroup, RichCell, Accordion, Subhead, Footnote, Spinner, Caption, Separator, Link } from '@vkontakte/vkui';
 import { Icon20InfoCircleOutline, Icon24PictureOutline, Icon24SearchStarsOutline, Icon12ArrowUpRightOutSquareOutline, Icon36Users3Outline } from '@vkontakte/icons';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from "react";
@@ -358,9 +358,15 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
               )})}
               <Separator />
               <ButtonGroup stretched align="right" gap="m" style={{ marginTop: '8px' }}>
-                <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.google, '_blank')}} key="google">google</Button>
-                <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.saucenao, '_blank')}} key="saucenao">saucenao</Button>
-                <Button mode="primary" size="s" onClick={() => {window.open(searchImgResArr[img.id].otherSearchHrefs.tineye, '_blank')}} key="tineye">tineye</Button>
+                <Link href={searchImgResArr[img.id].otherSearchHrefs.google} target="_blank" style={{ textDecoration: 'none' }}>
+                  <Button mode="primary" size="s" key="google">google</Button>
+                </Link>
+                <Link href={searchImgResArr[img.id].otherSearchHrefs.saucenao} target="_blank" style={{ textDecoration: 'none' }}>
+                  <Button mode="primary" size="s" key="saucenao">saucenao</Button>
+                </Link>
+                <Link href={searchImgResArr[img.id].otherSearchHrefs.tineye} target="_blank" style={{ textDecoration: 'none' }}>
+                  <Button mode="primary" size="s" key="tineye">tineye</Button>
+                </Link>
               </ButtonGroup>
             </>
             )}
