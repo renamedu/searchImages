@@ -94,7 +94,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
             type: 'image'
           },
           title: 'А также поиск копий в альбомах',
-          subtitle: 'В ваших альбомах вы можете найди копии фото или искать оригиналы каждого изображения',
+          subtitle: 'В ваших альбомах вы можете найти копии фото или искать оригиналы каждого изображения',
         },
       ]
     }).then(() => {
@@ -280,7 +280,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
               <span style={{ color: '#fff' }}>!</span>
             </Avatar>
           }
-          header="Вы можете выбирать только изображения(jpg, jpeg, png, gif)!"
+          header="Вы можете выбирать только изображения (jpg, jpeg, png, gif)!"
         />}
       </Group>
       { images?.length > 0 && images?.map((img, index) => {
