@@ -339,15 +339,16 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
                         <ButtonGroup mode="horizontal" gap="s" stretched>
                           {result.sources.map((source, sIndex) => {
                             return (
-                              <Button 
-                                mode="primary" 
-                                size="s" 
-                                onClick={() => {window.open(source.fixedHref, '_blank')}}
-                                disabled={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && (!userReg || userReg == "RU") && true}
-                                after={<Icon12ArrowUpRightOutSquareOutline />}
-                                key={sIndex}>
-                                  {source.service}
-                              </Button>
+                              <Link href={source.fixedHref} target="_blank" style={{ textDecoration: 'none' }} key={sIndex}>
+                                <Button 
+                                  mode="primary" 
+                                  size="s"
+                                  disabled={(source.service != "Anime-Pictures" && source.service != "Zerochan" && source.service != "e-shuushuu") && (!userReg || userReg == "RU") && true}
+                                  after={<Icon12ArrowUpRightOutSquareOutline />}
+                                  >
+                                    {source.service}
+                                </Button>
+                              </Link>
                           )})}
                         </ButtonGroup>
                       }
