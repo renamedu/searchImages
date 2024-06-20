@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState } from "react";
 import bridge from '@vkontakte/vk-bridge';
 import {Image as VKImage} from '@vkontakte/vkui';
-import { throttle } from 'lodash';
 import preview1 from '../images/preview1.jpg';
 import preview2 from '../images/preview2.jpg';
 import preview3 from '../images/preview3.jpg';
@@ -173,37 +172,69 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
     }
   }, [selectedFiles]);
 
-  const throttledFetchSearchImage = throttle(
-    async function fetchSearchImage(arrayBuffer, imgId) {
-      setSearchSpinner((prevState) => ({ ...prevState, [imgId]: true }))
-      try {
-        const uint8Array = new Uint8Array(arrayBuffer);
-        const requestOptions = {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            imgData: Array.from(uint8Array),
-          }),
-        };
-        if (!userReg) {
-          try {
-          const response = await axios.get('https://ipinfo.io/json');
-          setUserReg(response.data.country);
-        } catch (error) {
-          console.error('Region location error:', error);
-        }
+  const [fetchSearchTimesArr, setFetchSearchTimesArr] = useState([Date.now()]);
+  const [AddWaiting, setAddWaiting] = useState(false)
+
+  async function handleSearchButtonClick(imgUrl, imgId) {
+    let nowTime = Date.now();
+    if (fetchSearchTimesArr.length < 3) {
+      fetchSearchImage(imgUrl, imgId)
+    } else {
+      if (nowTime - fetchSearchTimesArr[fetchSearchTimesArr.length - 3] > 6000) {
+        fetchSearchImage(imgUrl, imgId)
+      } else {
+        bridge.send('VKWebAppCheckNativeAds', {
+          ad_format: 'interstitial'
+          })
+          .then((data) => { 
+            if (data.result) { 
+              bridge.send('VKWebAppShowNativeAds', {
+                ad_format: 'interstitial'
+                })
+                .then( (data) => { 
+                  if (data.result) {}
+                })
+                .catch((error) => { console.log(error) });
+            }
+          }).catch((error) => { console.log(error) });
+        setAddWaiting(true)
+        setTimeout(() => {setAddWaiting(false)}, 4900);
       }
-        const response = await fetch('https://app51674008.ru', requestOptions);
-        const searchImageResult = await response.json()
-        setSearchImgResArr((prevState) => ({ ...prevState, [imgId]: searchImageResult.searchImageResult }))
+      setFetchSearchTimesArr((prevState) => prevState.slice(1));
+    }
+    setFetchSearchTimesArr((prevState) => [ ...prevState, nowTime ]);
+  }
+
+  async function fetchSearchImage(arrayBuffer, imgId) {
+    setSearchSpinner((prevState) => ({ ...prevState, [imgId]: true }))
+    try {
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const requestOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imgData: Array.from(uint8Array),
+        }),
+      };
+      if (!userReg) {
+        try {
+        const response = await axios.get('https://ipinfo.io/json');
+        setUserReg(response.data.country);
       } catch (error) {
-        console.log(error)
-      } finally {
-        setSearchSpinner((prevState) => ({ ...prevState, [imgId]: false }));
+        console.error('Region location error:', error);
       }
-  }, 1000);
+    }
+      const response = await fetch('https://app51674008.ru', requestOptions);
+      const searchImageResult = await response.json()
+      setSearchImgResArr((prevState) => ({ ...prevState, [imgId]: searchImageResult.searchImageResult }))
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setSearchSpinner((prevState) => ({ ...prevState, [imgId]: false }));
+    }
+  }
 
   const handleButtonClick = async () => {
     if (!vkUserAuthToken) {
@@ -302,7 +333,14 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
             {`${img.width}x${img.height}`}
           </RichCell>
           {!searchImgResArr[img.id] &&
-            <Button mode="secondary" stretched before={searchSpinner[img.id] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} onClick={() => {throttledFetchSearchImage(img.arrayBuffer, img.id)}}>
+            <Button 
+              mode="secondary"
+              stretched 
+              disabled = { AddWaiting && true }
+              before={searchSpinner[img.id] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} 
+              onClick={() => {
+                handleSearchButtonClick(img.arrayBuffer, img.id)
+            }}>
               {"Поиск"}
             </Button>
           }
