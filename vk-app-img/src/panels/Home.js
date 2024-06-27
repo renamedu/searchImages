@@ -8,6 +8,9 @@ import preview1 from '../images/preview1.jpg';
 import preview2 from '../images/preview2.jpg';
 import preview3 from '../images/preview3.jpg';
 import axios from 'axios';
+import { checkAndShowAds } from '../service/CheckAndShowAds';
+import HomeInfoAccordion from '../components/HomeInfoAccordion';
+import OtherSearchLinks from '../components/OtherSearchLinks';
 
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 
@@ -46,7 +49,6 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
       try {
         const storageData = await bridge.send('VKWebAppStorageGet', { keys: ['onboarding_status'] });
         const onboardingStatus = storageData.keys[0]?.value;
-        // console.log('Onboarding status:', onboardingStatus);
 
         if (onboardingStatus !== 'completed') {
           if (previews && previews.length > 0) {
@@ -118,17 +120,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
     if (files.length > 20) {
       setLimitFiles(1);
     } else if (files.length > 10) {
-      (Math.random() < 0.5) && bridge.send('VKWebAppCheckNativeAds', {
-        ad_format: 'interstitial'
-      }).then((data) => { 
-        if (data.result) { 
-          bridge.send('VKWebAppShowNativeAds', {
-            ad_format: 'interstitial'
-          }).then( (data) => { 
-            if (data.result) {}
-          }).catch((error) => { console.log(error) });
-        }
-      }).catch((error) => { console.log(error) });
+      (Math.random() < 0.5) && checkAndShowAds();
       setSelectedFiles(files);
     } else {
       setSelectedFiles(files);
@@ -183,20 +175,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
       if (nowTime - fetchSearchTimesArr[fetchSearchTimesArr.length - 3] > 6000) {
         fetchSearchImage(imgUrl, imgId)
       } else {
-        bridge.send('VKWebAppCheckNativeAds', {
-          ad_format: 'interstitial'
-          })
-          .then((data) => { 
-            if (data.result) { 
-              bridge.send('VKWebAppShowNativeAds', {
-                ad_format: 'interstitial'
-                })
-                .then( (data) => { 
-                  if (data.result) {}
-                })
-                .catch((error) => { console.log(error) });
-            }
-          }).catch((error) => { console.log(error) });
+        checkAndShowAds();
         setAddWaiting(true)
         setTimeout(() => {setAddWaiting(false)}, 4900);
       }
@@ -251,38 +230,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
     <Panel id={id}>
       <PanelHeader>Поиск картинок</PanelHeader>
       <Group>
-        <Accordion>
-          <Accordion.Summary style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center' }}>
-              <Icon20InfoCircleOutline style={{ marginRight: '8px' }} />
-              <span>О приложении</span>
-            </div>
-          </Accordion.Summary>
-          <Accordion.Content>
-            <Div>
-            <Subhead>
-              На главной странице вы можете загрузить свои изображения для поиска подлинников. Также возможно искать оригиналы среди ваших изображений в альбомах. Для каждого альбома доступны две опции: поиск копий и поиск оригиналов изображений.
-            </Subhead>
-            <Subhead>Поиск копий изображений:</Subhead>
-            <Footnote>
-              • Позволяет находить копии в выбранном альбоме.
-              <br />
-              • Отображает изображения с датой загрузки и размером, а также процентом сходства.
-              <br />
-              • Возможность просматривать найденные копии в приложении и в альбоме.
-            </Footnote>
-            <br />
-            <Subhead>Поиск оригиналов изображений:</Subhead>
-            <Footnote>
-              • Ищет оригиналы изображений из альбома, по сервисам картинок (Danbooru, Anime-Pictures, e-shuushuu и др.).
-              <br />
-              • Если картинки нет в сервисах, будет предложено найти в Google, SauceNAO и TinEye.
-              <br />
-              • Результаты поиска возможно открыть во вкладках браузера.
-            </Footnote>
-            </Div>
-          </Accordion.Content>
-        </Accordion>
+        < HomeInfoAccordion />
       </Group>
 
       <Group>
@@ -396,17 +344,7 @@ export const Home = ({ id, fetchedUser, setVkUserAuthToken, vkUserAuthToken }) =
                   </React.Fragment>
               )})}
               <Separator />
-              <ButtonGroup stretched align="right" gap="m" style={{ marginTop: '8px' }}>
-                <Link href={searchImgResArr[img.id].otherSearchHrefs.google} target="_blank" style={{ textDecoration: 'none' }}>
-                  <Button mode="primary" size="s" key="google">google</Button>
-                </Link>
-                <Link href={searchImgResArr[img.id].otherSearchHrefs.saucenao} target="_blank" style={{ textDecoration: 'none' }}>
-                  <Button mode="primary" size="s" key="saucenao">saucenao</Button>
-                </Link>
-                <Link href={searchImgResArr[img.id].otherSearchHrefs.tineye} target="_blank" style={{ textDecoration: 'none' }}>
-                  <Button mode="primary" size="s" key="tineye">tineye</Button>
-                </Link>
-              </ButtonGroup>
+              <OtherSearchLinks imgId={img.id} searchImgResArr={searchImgResArr} />
             </>
             )}
         </Group>

@@ -4,7 +4,6 @@ export const AddImgMaxRes = function (img) {
     width: 0,
     height: 0,
     url: "",
-    previewImg: "",
   };
   img.sizes.forEach((size) => {
     if (size.height > imgMaxResolution.height) {
@@ -20,4 +19,14 @@ export const AddImgMaxRes = function (img) {
     }
   });
   img.imgMaxResolution = imgMaxResolution;
+  img.sizes = [];
 };
+
+export const imageMaxResolution = function (imgArray) {
+  imgArray.forEach((img) => {
+    AddImgMaxRes(img);
+  });
+  return imgArray;
+};
+
+

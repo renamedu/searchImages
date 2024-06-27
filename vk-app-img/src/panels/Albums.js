@@ -51,8 +51,8 @@ export const Albums = ({ id, fetchedUser, vkUserAuthToken }) => {
                 actions={
                     <ButtonGroup mode="horizontal" gap="s" stretched>
                     <Button mode="secondary" size="l" onClick={() => {
-                        routeNavigator.push('searchCopy', {state: {item}});
-                        
+                        // routeNavigator.push('searchCopy', {state: {item}});
+                        routeNavigator.push(`searchCopy?albumId=${item.id}&title=${item.title}&size=${item.size}`);
                     }}>
                         Копии
                     </Button>

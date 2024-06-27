@@ -20,9 +20,12 @@ export const loadImage = async function (imageUrl) {
     try {
         const blob = await fetchImageBlob(imageUrl);
         const img = await createImage(blob);
-        const width = 20;
-        const height = 20;
-        const canvas = document.createElement('canvas');
+        const width = 10;
+        const height = 10;
+        // const canvas = document.createElement('canvas');
+        const canvas = (typeof OffscreenCanvas !== 'undefined') 
+            ? new OffscreenCanvas(width, height) 
+            : document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
@@ -34,10 +37,43 @@ export const loadImage = async function (imageUrl) {
         throw error;
     }
 }
+const getPreloadImages = async (imageArray) => {
+    const prepreloadedImages = await Promise.all(imageArray.map(async (image) => {
+      try {
+        const createdImg = await loadImage(image.imgMaxResolution.comparsionSize);
+        return {
+          ...image,
+          createdImg,
+        };
+      } catch (error) {
+        console.warn(`Skipping image with id ${image.id} due to load error.`);
+        return null;
+      }
+    }));
+    // console.log(prepreloadedImages[0].createdImg.data.length)
+    return prepreloadedImages.filter(image => image !== null);
+};
+const chunkArray = (array, chunkSize) => {
+    const result = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      result.push(array.slice(i, i + chunkSize));
+    }
+    return result;
+};
+export const preloadImagesInChunks = async (imageArray, chunkSize = 500) => {
+    const chunks = chunkArray(imageArray, chunkSize);
+    const preloadedImages = [];
+    for (const chunk of chunks) {
+        const chunkPreloadedImages = await getPreloadImages(chunk);
+        preloadedImages.push(...chunkPreloadedImages);
+    }
+    return preloadedImages;
+};
+
 // Function to compare two images
 export const compareImages = async function (img1, img2, diff) {
     try {
-        const numDiff = pixelmatch(img1.data, img2.data, diff, 20, 20);
+        const numDiff = pixelmatch(img1.data, img2.data, diff, 10, 10);
         return numDiff;
     } catch (error) {
         console.error('Error comparing images:', error);

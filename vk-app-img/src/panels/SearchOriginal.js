@@ -11,6 +11,11 @@ import { setOffsetAccPage } from '../service/SetOffsetAccPage';
 import { setAlbumNum } from '../service/SetAlbumNum';
 import { useSearchParams } from '@vkontakte/vk-mini-apps-router';
 import axios from 'axios';
+import { getAlbumPhotos } from '../service/FetchAlbumsPhotos';
+import ScrollToTopButton from '../components/ScrollToTopButton';
+import OtherSearchLinks from '../components/OtherSearchLinks';
+import ErrorBanner from '../components/ErrorBanner';
+import { checkAndShowAds } from '../service/CheckAndShowAds';
 
 export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbumId }) => {
   const routeNavigator = useRouteNavigator();
@@ -39,52 +44,25 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
     setCurrentPage(page);
     setOffset(setOffsetAccPage(page))
     window.scrollTo(0, 0);
-    bridge.send('VKWebAppCheckNativeAds', {
-      ad_format: 'interstitial'
-      })
-      .then((data) => { 
-        if (data.result) { 
-          bridge.send('VKWebAppShowNativeAds', {
-            ad_format: 'interstitial'
-            })
-            .then( (data) => { 
-              if (data.result) {}
-            })
-            .catch((error) => { console.log(error) });
-        }
-      })
-      .catch((error) => { console.log(error) });
+    checkAndShowAds();
   }, []);
 
   useEffect(() => {
     setLoadingAlbumsImages(1);
     if (vkUserAuthToken) {
-      async function fetchAlbumsImages() {
-        const albumsImages = await bridge.send("VKWebAppCallAPIMethod", {
-          method: "photos.get",
-          params: {
-            owner_id: fetchedUser?.id,
-            album_id: albumId,
-            access_token: vkUserAuthToken?.access_token,
-            v: "5.131",
-            count: 1000,
-            rev: 1,
-            offset: offset,
-          },
-        });
-        return albumsImages;
-      }
-      fetchAlbumsImages()
-        .then((albumsImages) => {
-          albumsImages.response.items.map((img) => {AddImgMaxRes(img)});
+      const fetchAndSetAlbumsImages = async () => {
+        try {
+          const albumsImages = await getAlbumPhotos(fetchedUser?.id, albumId, vkUserAuthToken?.access_token, 1000, offset);
+          albumsImages.response.items.forEach(AddImgMaxRes);
           setAlbumsImages(albumsImages.response.items);
           setLoadingAlbumsImages(null);
           setError(null);
-        })
-        .catch(error => {
+        } catch (error) {
           setError(1);
-          console.log(error)
-        });
+          console.error(error);
+        }
+      };
+      fetchAndSetAlbumsImages();
     }
   }, [offset, vkUserAuthToken]);
 
@@ -106,20 +84,7 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
       if (nowTime - fetchSearchTimesArr[fetchSearchTimesArr.length - 3] > 6000) {
         fetchSearchImage(imgUrl, imgId)
       } else {
-        bridge.send('VKWebAppCheckNativeAds', {
-          ad_format: 'interstitial'
-          })
-          .then((data) => { 
-            if (data.result) { 
-              bridge.send('VKWebAppShowNativeAds', {
-                ad_format: 'interstitial'
-                })
-                .then( (data) => { 
-                  if (data.result) {}
-                })
-                .catch((error) => { console.log(error) });
-            }
-          }).catch((error) => { console.log(error) });
+        checkAndShowAds();
         setAddWaiting(true)
         setTimeout(() => {setAddWaiting(false)}, 4900);
       }
@@ -160,61 +125,48 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
 
   return (
       <Panel id={id}>
-        <FixedLayout vertical="bottom" style={{ left: '16px', bottom: '56px', pointerEvents: 'none'}}>
-          <Button size="l" mode="primary" style={{ pointerEvents: 'auto'}} rounded onClick={() => {window.scrollTo({ top: 0, behavior: 'smooth'})}}>
-            <Icon16ChevronUpCircle />
-          </Button>
-        </FixedLayout>
-          <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/albums')} />}>
-            Поиск оригиналов
-          </PanelHeader>
-          <Group header={<Header 
-            mode="primary"
-            indicator={albumSize}
-            >
-              {albumTitle}
-            </Header>}>
-            {error && <Banner
-              before={<Icon28CancelCircleFillRed />}
-              header="Ошибка загрузки :("
-              subheader={<React.Fragment>Попробуйте перезайти в альбом или перезагрузить приложение</React.Fragment>}
-            />}
-            { !error && albumsImages?.length > 0 &&
-            <div style={{ maxWidth: '100%', overflowX: 'auto' }}><Pagination
-              currentPage={currentPage}
-              siblingCount={siblingCount}
-              boundaryCount={boundaryCount}
-              totalPages={totalPages}
-              disabled={false}
-              onChange={handleChange}
-            /></div>}
-            {!error && albumsImages?.length > 0 && <FormLayoutGroup>
-              <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-                <FormItem top="Введите номер страницы">
-                  <input 
-                    type="number" 
-                    width="auto" 
-                    min="1" 
-                    max={totalPages} 
-                    value={searchPageNumber}
-                    onChange={
-                      (e) => {const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        setSearchPageNumber(value);
-                      }}
-                    }
-                  />
-                </FormItem>
-                <FormItem>
-                  <Button size="l" stretched onClick={() => {
-                      handleChange(Number(searchPageNumber))
-                    }} disabled={searchPageNumber > totalPages || searchPageNumber < 1 || searchPageNumber == currentPage} >
-                    Перейти
-                  </Button>
-                </FormItem>
-              </Div>
-            </FormLayoutGroup>}
-          </Group>
+        <ScrollToTopButton />
+        <PanelHeader before={<PanelHeaderBack onClick={() => routeNavigator.replace('/albums')} />}>
+          Поиск оригиналов
+        </PanelHeader>
+        <Group header={<Header mode="primary" indicator={albumSize}>{albumTitle}</Header>}>
+          {error && <ErrorBanner />}
+          { !error && albumsImages?.length > 0 &&
+          <div style={{ maxWidth: '100%', overflowX: 'auto' }}><Pagination
+            currentPage={currentPage}
+            siblingCount={siblingCount}
+            boundaryCount={boundaryCount}
+            totalPages={totalPages}
+            disabled={false}
+            onChange={handleChange}
+          /></div>}
+          {!error && albumsImages?.length > 0 && <FormLayoutGroup>
+            <Div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+              <FormItem top="Введите номер страницы">
+                <input 
+                  type="number" 
+                  width="auto" 
+                  min="1" 
+                  max={totalPages} 
+                  value={searchPageNumber}
+                  onChange={
+                    (e) => {const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      setSearchPageNumber(value);
+                    }}
+                  }
+                />
+              </FormItem>
+              <FormItem>
+                <Button size="l" stretched onClick={() => {
+                    handleChange(Number(searchPageNumber))
+                  }} disabled={searchPageNumber > totalPages || searchPageNumber < 1 || searchPageNumber == currentPage} >
+                  Перейти
+                </Button>
+              </FormItem>
+            </Div>
+          </FormLayoutGroup>}
+        </Group>
           { loadingAlbumsImages && <Spinner size="large" style={{ margin: '20px 0' }} />}
         { !error && !loadingAlbumsImages && albumsImages?.length > 0 && currentPageItems?.map((img, index) => {
           let imgId = img.id;
@@ -252,7 +204,6 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
                   disabled = { AddWaiting && true }
                   before={searchSpinner[imgId] ? <Spinner size="regular"/> : <Icon24SearchStarsOutline />} 
                   onClick={() => {
-                    // fetchSearchImageWrapper(img.imgMaxResolution.url, img.id)
                     handleSearchButtonClick(img.imgMaxResolution.url, img.id)
                   }}
                 >
@@ -311,17 +262,7 @@ export const SearchOriginal = ({ id, fetchedUser, vkUserAuthToken, originalAlbum
                         </React.Fragment>
                   )})}
                   <Separator />
-                  <ButtonGroup stretched align="right" gap="m" style={{ marginTop: '8px' }}>
-                    <Link href={searchImgResArr[imgId].otherSearchHrefs.google} target="_blank" style={{ textDecoration: 'none' }}>
-                      <Button mode="primary" size="s" after={<Icon12ArrowUpRightOutSquareOutline />} key="google">google</Button>
-                    </Link>
-                    <Link href={searchImgResArr[imgId].otherSearchHrefs.saucenao} target="_blank" style={{ textDecoration: 'none' }}>
-                      <Button mode="primary" size="s" after={<Icon12ArrowUpRightOutSquareOutline />} key="saucenao">saucenao</Button>
-                    </Link>
-                    <Link href={searchImgResArr[imgId].otherSearchHrefs.tineye} target="_blank" style={{ textDecoration: 'none' }}>
-                      <Button mode="primary" size="s" after={<Icon12ArrowUpRightOutSquareOutline />} key="tineye">tineye</Button>
-                    </Link>
-                  </ButtonGroup>
+                  <OtherSearchLinks imgId={imgId} searchImgResArr={searchImgResArr} />
                 </>
               )}
             </Group>
