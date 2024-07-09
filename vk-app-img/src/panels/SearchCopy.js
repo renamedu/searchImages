@@ -135,7 +135,6 @@ export const SearchCopy = ({ id, fetchedUser, vkUserAuthToken }) => {
 
   const fetchAndSearchCopy = async function() {
     setSearchButtonDisabled(true)
-    checkAndShowAds();
     try {
         setSearchLoading(["accent", 10])
         let AlbumsImagesArray = await fetchAlbumsImages();
@@ -147,6 +146,7 @@ export const SearchCopy = ({ id, fetchedUser, vkUserAuthToken }) => {
         setDiffImagesArray(similarImages);
         setSearchLoading(["positive", 100])
         setSearchStory(searchTime.toString())
+        checkAndShowAds();
         setTimeout(() => {setSearchLoading(null)}, 3000);
         AlbumsImagesArray = null;
         AlbumsImagesWithRes = null;
