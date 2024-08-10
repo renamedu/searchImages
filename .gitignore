@@ -34,3 +34,14 @@ sketch
 .ionide
 
 /image-search-backend
+/vk-app-img-backend
+
+build
+
+GPTANSWER.js
+SearchCopy.js
+SearchCopy2.js
+SearchCopy_old.js
+TEST.js
+TESTImageComparerTEST.js
+User.js
